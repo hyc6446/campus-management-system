@@ -49,7 +49,7 @@ export class TokenRepository {
       where: {
         userId,
         type,
-        revoked: false,
+        deletedAt: null,
       },
       include: {
         user: includeUser,
@@ -67,7 +67,7 @@ export class TokenRepository {
     const tokenData = await this.prisma.token.findFirst({
       where: {
         userId,
-        revoked: false,
+        deletedAt: null,
       },
       include: {
         user: includeUser,
@@ -91,7 +91,7 @@ export class TokenRepository {
       where: {
         userId,
         type,
-        revoked: false,
+        deletedAt: null,
         expiresAt: { gte: new Date() },
       },
       include: {
@@ -114,7 +114,7 @@ export class TokenRepository {
     const tokenDataList = await this.prisma.token.findMany({
       where: {
         userId,
-        revoked: false,
+        deletedAt: null,
         expiresAt: { gte: new Date() },
       },
       include: {
@@ -130,7 +130,7 @@ export class TokenRepository {
    * @returns 撤销后的Token
    */
   async revoke(id: number): Promise<Token> {
-    return this.update(id, { revoked: true });
+    return this.update(id, { deletedAt: new Date() });
   }
 
   /**
@@ -145,7 +145,7 @@ export class TokenRepository {
   ): Promise<Token[]> {
     await this.prisma.token.updateMany({
       where: { userId, type },
-      data: { revoked: true }
+      data: { deletedAt: new Date() }
     });
     // 查询并返回更新后的Token列表
     return this.findActiveByUserIdAndType(userId, type);
@@ -166,7 +166,7 @@ export class TokenRepository {
         token: tokenData.token || '',
         type: tokenData.type || TokenType.REFRESH,
         expiresAt: tokenData.expiresAt || new Date(),
-        revoked: tokenData.revoked || false,
+        deletedAt: tokenData.deletedAt || null,
       },
       select
     });
@@ -201,7 +201,7 @@ export class TokenRepository {
         token: tokenData.token,
         type: tokenData.type,
         expiresAt: tokenData.expiresAt,
-        revoked: tokenData.revoked,
+        deletedAt: tokenData.deletedAt, 
         updatedAt: new Date(),
       },
       include: {
@@ -277,7 +277,7 @@ export class TokenRepository {
       select: {
         id: true,
         type: true,
-        revoked: true,
+        deletedAt: true,
         expiresAt: true,
       },
     });
@@ -285,7 +285,7 @@ export class TokenRepository {
     return (
       !!tokenData &&
       tokenData.type === type &&
-      !tokenData.revoked &&
+      tokenData.deletedAt === null &&
       tokenData.expiresAt > new Date()
     );
   }

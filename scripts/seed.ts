@@ -41,9 +41,8 @@ async function main() {
       email: 'admin@campus.com',
       password: adminPassword,
       userName: '系统管理员',
-      roleId: adminRole.id,
-      isActive: true,
-    },
+      roleId: adminRole.id
+    }
   });
 
   console.log('✅ 创建管理员用户:', admin.email);
@@ -95,8 +94,9 @@ async function main() {
   // 创建测试用户
   const testUsers = [
     {
-      email: 'me@test.com',
-      password: 'admin123',
+      id:0,
+      email: 'anonymous@example.com',
+      password: '111111',
       userName: '默认账户',
       roleId: adminRole.id,
     },
@@ -126,7 +126,6 @@ async function main() {
       data: {
         ...user,
         password: hashedPassword,
-        isActive: true,
       },
     });
     console.log(`✅ 创建测试用户: ${user.email}`);

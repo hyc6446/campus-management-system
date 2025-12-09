@@ -106,7 +106,7 @@ export class AuthService {
    */
   async validateUser(email: string, password: string): Promise<User | null> {
     // 根据邮箱查找用户
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userService.findByEmail(email,{include:{role:true}});
     // 检查用户是否存在且状态为激活
     if (!user || !user.isActive) return null;
     

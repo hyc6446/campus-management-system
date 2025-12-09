@@ -1,6 +1,5 @@
 import { Token } from "@prisma/client";
 
-
 export type TokenSelect ={
   [K in keyof Token]?:boolean
 }
@@ -11,3 +10,5 @@ export type TokenSelect ={
 export type TokenWithFields<T extends TokenSelect> = {
   [K in keyof T as T[K] extends true ? K : never]: Token[K & keyof Token];
 };
+
+// export type TokenWithFields<T extends TokenSelect> = T extends {[P in keyof Token]: boolean} ? Token : never

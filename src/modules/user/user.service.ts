@@ -5,6 +5,8 @@ import { File } from '@common/types/file.types';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index';
+import { SAFE_USER, UserFindOptions, UserSelect } from '@app/common/types/entity/user.type';
+import { UserWithFields } from '@app/common/types/entity/user.type';
 @Injectable()
 export class UserService {
   constructor(
@@ -38,8 +40,8 @@ export class UserService {
    * @param email 用户邮箱
    * @returns 用户对象或null
    */
-  async findByEmailOptional(email: string): Promise<User | null> {
-    return this.userRepository.findByEmail(email);
+  async findByEmailOptional<T extends UserFindOptions>(email: string,options: T = { select: SAFE_USER } as T): Promise<UserWithFields<T> | null> {
+    return this.userRepository.findByEmail(email,options);
   }
 
   /**
@@ -48,8 +50,8 @@ export class UserService {
    * @returns 用户对象
    * @throws NotFoundException 用户不存在
    */
-  async findByEmail(email: string): Promise<User> {
-    const user = await this.findByEmailOptional(email);
+  async findByEmail<T extends UserFindOptions>(email: string,options: T = { select: SAFE_USER } as T): Promise<UserWithFields<T>> {
+    const user = await this.findByEmailOptional(email,options);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }

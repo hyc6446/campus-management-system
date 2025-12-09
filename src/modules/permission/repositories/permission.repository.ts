@@ -48,8 +48,7 @@ export class PermissionRepository {
         action: permissionData.action as string,
         subject: permissionData.subject as string,
         conditions: permissionData.conditions as InputJsonValue ,
-        roleId: permissionData.roleId as number,
-        isEnabled: permissionData.isEnabled as boolean,
+        roleId: permissionData.roleId as number
       },
     });
     
@@ -70,8 +69,7 @@ export class PermissionRepository {
         action: updateData.action as string,
         subject: updateData.subject as string,
         conditions: updateData.conditions as InputJsonValue,
-        roleId: updateData.roleId as number,
-        isEnabled: updateData.isEnabled as boolean,
+        roleId: updateData.roleId as number
       },
     });
     

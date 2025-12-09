@@ -195,7 +195,7 @@ export class AuditLogInterceptor implements NestInterceptor {
   ): Promise<number> {  
     // 1、从请求中获取用户id
     if (context.request?.user?.id) {
-      return Number(context.request.user.id)
+      return Number(context.request.user.id) || 0
     }
     // 2、从请求头中获取accessToken
     const accessToken = context?.request?.headers['authorization']
@@ -204,23 +204,23 @@ export class AuditLogInterceptor implements NestInterceptor {
       const payload = this.jwtService.verify(token, {
         secret: this.configService.get('auth.jwtSecret'),
       }) as any
-      return Number(payload.sub)
+      return Number(payload.sub) || 0
     }
     // 3、从上下文数据中获取用户id
     const userIdStr = this.resolveValue(userIdPath, context)
     if (userIdStr === 'unknown'){
       const defaultUserId = await this.getDefaultUserId()
-      return defaultUserId
+      return defaultUserId || 0
     } 
-    return Number(userIdStr)
+    return Number(userIdStr) || 0
   }
   /**
    * 获取默认用户id
    * @returns 默认用户id
    */
   private async getDefaultUserId(): Promise<number> {
-   const user = await this.userService.findByEmailOptional('me@test.com');
-   return Number(user?.id)
+   const user = await this.userService.findByEmailOptional('anonymous@example.com');
+   return Number(user?.id) || 0
   }
   /**
    * 解析路径字符串或执行函数获取值

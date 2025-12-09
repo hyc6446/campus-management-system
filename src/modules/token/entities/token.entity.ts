@@ -30,9 +30,9 @@ export class Token {
   expiresAt!: Date;
 
   /**
-   * 是否已撤销
+   * 是否已删除
    */
-  revoked: boolean = false;
+  deletedAt: Date | null = null;
 
   /**
    * Token创建时间
@@ -50,7 +50,7 @@ export class Token {
     this.token= partial.token || ''
     this.type= partial.type || TokenType.REFRESH
     this.expiresAt= partial.expiresAt || new Date()
-    this.revoked= partial.revoked || false
+    this.deletedAt= partial.deletedAt || null
     this.createdAt= partial.createdAt || new Date()
     this.updatedAt= partial.updatedAt || new Date()
   }
