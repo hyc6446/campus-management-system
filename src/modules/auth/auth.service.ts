@@ -20,6 +20,11 @@ export class AuthService {
    * @throws UnauthorizedException 无效凭据
    */
   async login(loginDto: LoginDto) {
+    // 1.检查是否为默认账户
+    if (loginDto.email === 'anonymous@example.com') {
+      throw new UnauthorizedException('无效的邮箱');
+    }
+    // 2.验证用户凭据
     const user = await this.coreAuthService.validateUser(
       loginDto.email,
       loginDto.password,

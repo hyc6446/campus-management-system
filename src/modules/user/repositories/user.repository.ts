@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@core/prisma/prisma.service';
 import { User } from '../entities/user.entity';
 import { UpdateUserDto } from '../dto/index';
+import { UserFindOptions, UserWithFields } from '@app/common/types/entity/user.type';
 
 @Injectable()
 export class UserRepository {
@@ -38,21 +39,39 @@ export class UserRepository {
    * @param email 用户邮箱
    * @returns 用户对象或null
    */
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail<T extends UserFindOptions>(
+    email: string,
+    options?: T
+  ): Promise<UserWithFields<T> | null> {
+    // 使用 Prisma 原生查询，直接传递 select 和 include 选项
     const userData = await this.prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        userName: true,
-        avatarUrl: true,
-        phone: true,
-        isActive: true,
-      }
+      where: { 
+        email,
+        deletedAt: null, // 软删除过滤
+      },
+      // 解构查询选项，Prisma 会自动处理 select 和 include
+      ...options,
     });
-    // 将Prisma查询结果转换为User实体类实例
-    return userData ? new User(userData) : null;
+
+    // 如果查询到数据，转换为 User 实体类实例
+    // 注意：如果使用了 include，需要确保实体类支持嵌套数据
+    return userData ? new User(userData as any) : null;
   }
+  // async findByEmail(email: string): Promise<User | null> {
+  //   const userData = await this.prisma.user.findUnique({
+  //     where: { email },
+  //     select: {
+  //       id: true,
+  //       email: true,
+  //       userName: true,
+  //       avatarUrl: true,
+  //       phone: true,
+  //       deletedAt: true,
+  //     }
+  //   });
+  //   // 将Prisma查询结果转换为User实体类实例
+  //   return userData ? new User(userData) : null;
+  // }
 
   /**
    * 创建新用户
@@ -68,7 +87,7 @@ export class UserRepository {
         avatarUrl: userData.avatarUrl as string,
         phone: userData.phone as string,
         roleId: userData.roleId as number,
-        isActive: userData.isActive as boolean
+        deletedAt: userData.deletedAt as Date | null,
       },
       include: { 
         role: {
@@ -172,7 +191,7 @@ export class UserRepository {
           token: refreshToken,
           type: 'REFRESH',
           expiresAt,
-          revoked: false
+          deletedAt: null
         }
       });
     });

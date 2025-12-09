@@ -34,7 +34,7 @@ class EnvironmentVariables {
   /** 应用监听主机 */
   @IsString()                   // 必须是字符串
   @IsOptional()                 // 可选参数，有默认值
-  APP_HOST = '0.0.0.0';
+  APP_HOST = '127.0.0.1';
 
   /** API路径前缀 */
   @IsString()                   // 必须是字符串

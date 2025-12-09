@@ -92,7 +92,7 @@ export class TokenService {
     if (type && token.type !== type) return null;
 
     // 检查是否已撤销
-    if (token.revoked) return null;
+    if (token.deletedAt) return null;
 
     // 检查是否已过期
     if (token.expiresAt < new Date()) return null;
@@ -113,11 +113,11 @@ export class TokenService {
       throw new NotFoundException('令牌不存在');
     }
 
-    if (token.revoked) {
+    if (token.deletedAt) {
       throw new BadRequestException('令牌已经被撤销');
     }
 
-    return this.tokenRepository.update(tokenId, { revoked: true });
+    return this.tokenRepository.update(tokenId, { deletedAt: new Date() });
   }
 
   /**
@@ -224,7 +224,7 @@ export class TokenService {
       token: tokenValue,
       type: TokenType.REFRESH,
       expiresAt,
-      revoked: false
+      deletedAt: null
     }, select);
   }
 

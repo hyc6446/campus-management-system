@@ -4,9 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // 数据库连接URL已迁移至 prisma.config.ts，此处移除 url 配置
   url      = env("DATABASE_URL")
-  
 }
 
 // 角色表 - 定义系统中的角色类型，如管理员、教师、学生等
@@ -18,10 +16,11 @@ model Role {
   // 创建时间：记录角色创建时间
   createdAt DateTime     @default(now()) @map("created_at")
   // 更新时间：记录角色最后更新时间
-  updatedAt DateTime     @default(now()) @map("updated_at")
+  updatedAt DateTime?    @updatedAt @map("updated_at")
+  // 删除时间戳：标记角色是否被禁用
+  deletedAt DateTime? @map("deleted_at")
   // 是否冻结：标识角色是否被禁用，默认启用
   isFrozen    Boolean    @default(false) @map("is_frozen")
-  
   // 关系定义
   // 一对多：一个角色可分配给多个用户
   users       User[]       @relation("UserRole")
@@ -46,8 +45,6 @@ model User {
   avatarUrl   String?   @map("avatar_url")
   // 电话号码：用户联系方式
   phone       String?   @map("phone")
-  // 账号状态：标识用户账号是否激活可用
-  isActive    Boolean   @default(true) @map("is_active")
   // 外键：关联到角色表，标识用户所属角色
   roleId      Int       @map("role_id")
   // 多对一：用户属于一个角色
@@ -59,7 +56,7 @@ model User {
   // 创建时间：记录用户注册时间
   createdAt   DateTime  @default(now()) @map("created_at")
   // 更新时间：记录用户信息最后更新时间
-  updatedAt   DateTime  @default(now()) @map("updated_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
   // 软删除时间戳：标记用户是否被删除
   deletedAt   DateTime? @map("deleted_at")
   
@@ -90,9 +87,9 @@ model Permission {
   // 创建时间：记录权限创建时间
   createdAt DateTime @default(now()) @map("created_at")
   // 更新时间：记录权限最后更新时间
-  updatedAt DateTime?  @map("updated_at")
-  // 启用状态：标识权限是否有效
-  isEnabled Boolean  @default(true) @map("is_enabled")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  // 删除时间戳：标记权限是否被删除
+  deletedAt DateTime? @map("deleted_at")
   // 唯一约束：确保同一角色对同一资源的同一操作只有一条权限记录
   @@unique([action, subject, roleId], name: "permission_action_subject_role_unique")
   // 映射到数据库表名
@@ -132,7 +129,7 @@ model AuditLog {
   // 操作时间：记录操作发生的时间
   createdAt  DateTime @default(now()) @map("created_at")
   // 更新时间：记录日志最后更新时间
-  updatedAt  DateTime @map("updated_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
   // 软删除时间戳：标记日志是否被删除
   deletedAt  DateTime? @map("deleted_at")
   // 映射到数据库表名
@@ -153,12 +150,10 @@ model Token {
   type      TokenType @map("type")
   // 过期时间：令牌的有效期
   expiresAt DateTime @map("expires_at")
-  // 是否已撤销：标识令牌是否被吊销（）
-  revoked   Boolean  @default(false) @map("revoked")
   // 创建时间：记录令牌创建时间
   createdAt DateTime @default(now()) @map("created_at")
   // 更新时间：记录令牌状态最后更新时间
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   // 添加软删除字段
   deletedAt DateTime? @map("deleted_at")
   // 映射到数据库表名
