@@ -12,7 +12,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
-
   const configService = app.get(ConfigService);
   const loggerService = app.get(LoggerService);
   const prismaService = app.get(PrismaService);
@@ -30,14 +29,8 @@ async function bootstrap() {
   // 全局拦截器
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  // 全局验证管道
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+  // 移除全局验证管道，项目使用的是局部Zod验证管道
+  // 全局验证管道与Zod验证管道冲突，会导致重复验证
 
   // Swagger文档
   setupSwagger(app, configService);

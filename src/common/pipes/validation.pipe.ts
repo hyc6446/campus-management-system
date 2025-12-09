@@ -21,7 +21,7 @@ export class ZodValidationPipe implements PipeTransform {
   }
 
   private formatZodErrors(error: ZodError) {
-    return (error as any).issues.map((issue: ZodIssue) => ({
+    return error.issues.map((issue: ZodIssue) => ({
       path: issue.path.join('.'),
       message: issue.message,
       code: issue.code,

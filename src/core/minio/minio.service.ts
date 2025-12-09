@@ -111,6 +111,7 @@ export class MinioService implements OnModuleInit {
     const fileExtension = file.originalname.split('.').pop();
     // 生成唯一文件名，包含前缀和UUID
     const fileName = `${prefix ? prefix + '/' : ''}${uuidv4()}.${fileExtension}`;
+    // const fileName = `avatars/${userId}/${uuidv4()}-${file.originalname}`;
     
     // 构建文件元数据
     const metaData = {

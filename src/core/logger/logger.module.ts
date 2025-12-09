@@ -1,8 +1,4 @@
-/**
- * 日志模块
- * 提供统一的日志记录功能，基于Pino日志库实现高性能日志记录
- */
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule as NestPinoLoggerModule } from 'nestjs-pino';
 import { LoggerService } from './logger.service';
@@ -14,6 +10,7 @@ import { LoggerService } from './logger.service';
  * - 注册LoggerService作为应用的日志服务接口
  * - 导出LoggerService供其他模块使用
  */
+@Global() 
 @Module({
   // 导入必要的模块
   imports: [

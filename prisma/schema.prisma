@@ -4,7 +4,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // 数据库连接URL已迁移至 prisma.config.ts，此处移除 url 配置
   url      = env("DATABASE_URL")
+  
 }
 
 // 角色表 - 定义系统中的角色类型，如管理员、教师、学生等
@@ -17,6 +19,8 @@ model Role {
   createdAt DateTime     @default(now()) @map("created_at")
   // 更新时间：记录角色最后更新时间
   updatedAt DateTime     @default(now()) @map("updated_at")
+  // 是否冻结：标识角色是否被禁用，默认启用
+  isFrozen    Boolean    @default(false) @map("is_frozen")
   
   // 关系定义
   // 一对多：一个角色可分配给多个用户
@@ -36,20 +40,22 @@ model User {
   email       String    @unique @map("email")
   // 密码：存储加密后的哈希值，确保安全性
   password    String    @map("password")
-  // 名字：用户的名字
-  firstName   String?   @map("first_name")
-  // 姓氏：用户的姓氏
-  lastName    String?   @map("last_name")
+  // 用户名：用户登录名
+  userName    String?   @map("user_name")
   // 头像URL：用户头像图片的存储路径
   avatarUrl   String?   @map("avatar_url")
   // 电话号码：用户联系方式
   phone       String?   @map("phone")
   // 账号状态：标识用户账号是否激活可用
   isActive    Boolean   @default(true) @map("is_active")
-  // 外键：关联到角色表
+  // 外键：关联到角色表，标识用户所属角色
   roleId      Int       @map("role_id")
   // 多对一：用户属于一个角色
   role        Role      @relation("UserRole", fields: [roleId], references: [id])
+  // 失败登录尝试次数：记录用户连续失败登录次数，用于防止暴力攻击
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  // 账号锁定时间：记录用户账号被锁定的时间，用于防止暴力攻击
+  lockUntil           DateTime? @map("lock_until")
   // 创建时间：记录用户注册时间
   createdAt   DateTime  @default(now()) @map("created_at")
   // 更新时间：记录用户信息最后更新时间
@@ -84,8 +90,9 @@ model Permission {
   // 创建时间：记录权限创建时间
   createdAt DateTime @default(now()) @map("created_at")
   // 更新时间：记录权限最后更新时间
-  updatedAt DateTime @default(now()) @map("updated_at")
-
+  updatedAt DateTime?  @map("updated_at")
+  // 启用状态：标识权限是否有效
+  isEnabled Boolean  @default(true) @map("is_enabled")
   // 唯一约束：确保同一角色对同一资源的同一操作只有一条权限记录
   @@unique([action, subject, roleId], name: "permission_action_subject_role_unique")
   // 映射到数据库表名
@@ -106,6 +113,16 @@ model AuditLog {
   resource   String   @map("resource")
   // 操作的具体资源ID：指向被操作的具体记录
   resourceId String?  @map("resource_id")
+  // HTTP方法：记录触发操作的HTTP方法（如GET、POST等）
+  method     String   @map("method")
+  // 请求路径：记录触发操作的URL路径
+  path       String   @map("path")
+  // 操作时长：记录操作处理时间（毫秒）
+  duration   Int      @map("duration")
+  // 操作时间：记录操作发生的时间
+  timestamp  DateTime? @default(now()) @map("timestamp")
+  // 是否成功：标识操作是否执行成功
+  isSuccess  Boolean  @default(true) @map("is_success")
   // 操作详情：以JSON格式存储操作的详细信息
   details    Json     @map("details")
   // 用户IP地址：记录操作时的IP地址
@@ -114,7 +131,10 @@ model AuditLog {
   userAgent  String?  @map("user_agent")
   // 操作时间：记录操作发生的时间
   createdAt  DateTime @default(now()) @map("created_at")
-
+  // 更新时间：记录日志最后更新时间
+  updatedAt  DateTime @map("updated_at")
+  // 软删除时间戳：标记日志是否被删除
+  deletedAt  DateTime? @map("deleted_at")
   // 映射到数据库表名
   @@map("audit_logs")
 }
@@ -133,13 +153,14 @@ model Token {
   type      TokenType @map("type")
   // 过期时间：令牌的有效期
   expiresAt DateTime @map("expires_at")
-  // 是否已撤销：标识令牌是否被吊销
+  // 是否已撤销：标识令牌是否被吊销（）
   revoked   Boolean  @default(false) @map("revoked")
   // 创建时间：记录令牌创建时间
   createdAt DateTime @default(now()) @map("created_at")
   // 更新时间：记录令牌状态最后更新时间
   updatedAt DateTime @default(now()) @map("updated_at")
-
+  // 添加软删除字段
+  deletedAt DateTime? @map("deleted_at")
   // 映射到数据库表名
   @@map("tokens")
 }

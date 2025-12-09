@@ -18,10 +18,10 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
     return next.handle().pipe(
       map((data) => {
         // 获取响应对象
-        const response = context.switchToHttp().getResponse();
+        // const response = context.switchToHttp().getResponse();
         
         // 获取请求对象
-        const request = context.switchToHttp().getRequest();
+        // const request = context.switchToHttp().getRequest();
         
         // 检查是否已经有ResponseUtil格式的数据
         // 如果数据已经是标准格式，直接返回

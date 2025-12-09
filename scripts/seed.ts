@@ -40,8 +40,7 @@ async function main() {
     data: {
       email: 'admin@campus.com',
       password: adminPassword,
-      firstName: '系统',
-      lastName: '管理员',
+      userName: '系统管理员',
       roleId: adminRole.id,
       isActive: true,
     },
@@ -65,6 +64,7 @@ async function main() {
     { action: 'read', subject: 'Course' },
     { action: 'read', subject: 'Score' },
     { action: 'read', subject: 'Attendance' },
+
   ].map(perm => prisma.permission.create({
     data: { ...perm, roleId: teacherRole.id }
   })));
@@ -95,24 +95,27 @@ async function main() {
   // 创建测试用户
   const testUsers = [
     {
+      email: 'me@test.com',
+      password: 'admin123',
+      userName: '默认账户',
+      roleId: adminRole.id,
+    },
+    {
       email: 'teacher@campus.com',
       password: 'teacher123',
-      firstName: '张',
-      lastName: '老师',
+      userName: '张老师',
       roleId: teacherRole.id,
     },
     {
       email: 'student@campus.com',
       password: 'student123',
-      firstName: '李',
-      lastName: '学生',
+      userName: '李学生',
       roleId: studentRole.id,
     },
     {
       email: 'parent@campus.com',
       password: 'parent123',
-      firstName: '王',
-      lastName: '家长',
+      userName: '王家长',
       roleId: parentRole.id,
     },
   ];

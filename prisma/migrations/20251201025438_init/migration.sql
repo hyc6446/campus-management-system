@@ -7,6 +7,7 @@ CREATE TABLE "roles" (
     "name" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_frozen" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "roles_pkey" PRIMARY KEY ("id")
 );
@@ -16,12 +17,13 @@ CREATE TABLE "users" (
     "id" SERIAL NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "first_name" TEXT,
-    "last_name" TEXT,
+    "user_name" TEXT,
     "avatar_url" TEXT,
     "phone" TEXT,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "role_id" INTEGER NOT NULL,
+    "failed_login_attempts" INTEGER NOT NULL DEFAULT 0,
+    "lock_until" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
@@ -37,7 +39,8 @@ CREATE TABLE "permissions" (
     "conditions" JSONB,
     "role_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
+    "is_enabled" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "permissions_pkey" PRIMARY KEY ("id")
 );
@@ -53,6 +56,8 @@ CREATE TABLE "audit_logs" (
     "ip_address" TEXT,
     "user_agent" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id")
 );
@@ -67,6 +72,7 @@ CREATE TABLE "tokens" (
     "revoked" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "tokens_pkey" PRIMARY KEY ("id")
 );
