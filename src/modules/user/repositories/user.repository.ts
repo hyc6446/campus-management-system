@@ -43,35 +43,19 @@ export class UserRepository {
     email: string,
     options?: T
   ): Promise<UserWithFields<T> | null> {
+    console.log("用户仓库层 根据邮箱查找用户 options:", options)
     // 使用 Prisma 原生查询，直接传递 select 和 include 选项
     const userData = await this.prisma.user.findUnique({
       where: { 
         email,
-        deletedAt: null, // 软删除过滤
+        deletedAt: null,
       },
       // 解构查询选项，Prisma 会自动处理 select 和 include
       ...options,
     });
 
-    // 如果查询到数据，转换为 User 实体类实例
-    // 注意：如果使用了 include，需要确保实体类支持嵌套数据
-    return userData ? new User(userData as any) : null;
+    return userData ? userData as UserWithFields<T> : null;
   }
-  // async findByEmail(email: string): Promise<User | null> {
-  //   const userData = await this.prisma.user.findUnique({
-  //     where: { email },
-  //     select: {
-  //       id: true,
-  //       email: true,
-  //       userName: true,
-  //       avatarUrl: true,
-  //       phone: true,
-  //       deletedAt: true,
-  //     }
-  //   });
-  //   // 将Prisma查询结果转换为User实体类实例
-  //   return userData ? new User(userData) : null;
-  // }
 
   /**
    * 创建新用户

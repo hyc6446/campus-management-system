@@ -54,7 +54,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
    * @returns 验证成功返回用户对象，Passport会将此对象附加到请求的user属性上
    * @throws UnauthorizedException 当凭据验证失败时抛出
    */
-  async validate(email: string, password: string): Promise<User> {
+  // TODO 优化异常处理，返回自定义错误信息
+  async validate(email: string, password: string): Promise<any> {
     // 调用认证服务的validateUser方法进行实际的凭据验证
     const user = await this.authService.validateUser(email, password);
     

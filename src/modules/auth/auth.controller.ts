@@ -53,7 +53,9 @@ export class AuthController {
     userIdPath: 'data.data.id',
   })
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto)
+    const result = this.authService.login(loginDto)
+    console.log("登录接口返回结果:", loginDto)
+    return result
   }
 
   @ApiOperation({ summary: '用户注册' })

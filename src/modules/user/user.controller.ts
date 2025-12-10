@@ -51,7 +51,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: '成功获取用户信息', type: User })
   @UseGuards(AuthGuard)
   @Get('profile')
-  async getProfile(@CurrentUser() user: User) {
+  async getProfile(@CurrentUser() user: any) {
     return this.userService.getSafeUser(user)
   }
 
@@ -115,7 +115,7 @@ export class UserController {
   @Get(':id')
   async findOne(@Param('id') id: number, @CurrentUser() currentUser: User) {
     const user = await this.userService.findById(id)
-    return this.userService.getSafeUser(user as User)
+    return this.userService.getSafeUser(user as any)
   }
 
   @ApiOperation({ summary: '更新用户信息' })

@@ -8,9 +8,6 @@ export class Role {
   // 角色名称，唯一约束
   name: string;
 
-  // 是否冻结：标识角色是否被禁用，默认启用
-  isFrozen: boolean = false;
-
   // 创建时间
   createdAt: Date;
 
@@ -21,7 +18,6 @@ export class Role {
   constructor(partial: Partial<Role> = {}) {
     this.id = partial.id || 0;
     this.name = partial.name || '';
-    this.isFrozen = partial.isFrozen || false;
     this.createdAt = partial.createdAt || new Date();
     this.updatedAt = partial.updatedAt || null;
   }

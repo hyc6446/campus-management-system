@@ -3,6 +3,8 @@ import { UserService } from '@modules/user/user.service';
 import { RoleService } from '@modules/role/role.service';
 import { AuthService as CoreAuthService } from '@core/auth/auth.service';
 import { LoginDto, RegisterDto } from './dto/index';
+import { UserWithFields } from '@app/common/types/entity/user.type';
+import { UserSelect } from '@app/common/types/entity/user.type';
 
 
 @Injectable()
@@ -29,6 +31,7 @@ export class AuthService {
       loginDto.email,
       loginDto.password,
     );
+    console.log("服务层 验证用户凭据 结果:", user)
 
     if (!user) {
       throw new UnauthorizedException('无效的邮箱或密码');
@@ -38,6 +41,7 @@ export class AuthService {
     
     // 返回用户信息(过滤敏感字段)
     const safeUser = await this.userService.getSafeUser(user);
+    console.log("服务层 登录 返回过滤敏感字段用户信息:", safeUser)
     return {
       accessToken,
       refreshToken,
@@ -83,15 +87,15 @@ export class AuthService {
    * @throws UnauthorizedException 无效令牌
    */
   async refreshToken(refreshToken: string) {
-    try {
-      // 1. 验证用户和令牌是否匹配
-      const user = await this.coreAuthService.validateRefreshToken(refreshToken);
-      // 3. 生成新的访问令牌
-      const accessToken = await this.coreAuthService.generateTokens(user);
-      console.log('刷新访问令牌accessToken',accessToken);
-      return accessToken;
-    } catch (error) {
-      throw new UnauthorizedException('无效或过期的刷新令牌');
-    }
+    // try {
+    //   // 1. 验证用户和令牌是否匹配
+    //   const user: UserWithFields<UserSelect> = await this.coreAuthService.validateRefreshToken(refreshToken);
+    //   // 3. 生成新的访问令牌
+    //   const accessToken = await this.coreAuthService.generateTokens(user);
+    //   console.log('刷新访问令牌accessToken',accessToken);
+    //   return accessToken;
+    // } catch (error) {
+    //   throw new UnauthorizedException('无效或过期的刷新令牌');
+    // }
   }
 }

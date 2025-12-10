@@ -18,8 +18,6 @@ export class Permission {
   createdAt: Date = new Date()
   // 记录操作时的更新时间
   updatedAt: Date | null = null
-  // 启用状态：标识权限是否有效
-  isEnabled?: boolean | null = true
 
   // 构造函数初始化默认值
   constructor(partial: Partial<Permission> = {}) {
@@ -30,6 +28,5 @@ export class Permission {
     this.roleId = partial.roleId || 0
     this.createdAt = partial.createdAt || new Date()
     this.updatedAt = partial.updatedAt || null
-    this.isEnabled = partial.isEnabled || true
   }
 }

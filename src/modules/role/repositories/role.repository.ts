@@ -44,8 +44,7 @@ export class RoleRepository {
   async create(roleData: Partial<CreateRoleDto>): Promise<Role> {
     const createdRole = await this.prisma.role.create({
       data: {
-        name: roleData.name as string,
-        isFrozen: roleData.isFrozen as boolean,
+        name: roleData.name as string
       },
     });
     
@@ -63,8 +62,7 @@ export class RoleRepository {
     const updatedRole = await this.prisma.role.update({
       where: { id },
       data: {
-        name: updateData.name as string,
-        isFrozen: updateData.isFrozen as boolean,
+        name: updateData.name as string
       },
     });
     

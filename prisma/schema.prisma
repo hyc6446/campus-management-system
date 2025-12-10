@@ -19,8 +19,6 @@ model Role {
   updatedAt DateTime?    @updatedAt @map("updated_at")
   // 删除时间戳：标记角色是否被禁用
   deletedAt DateTime? @map("deleted_at")
-  // 是否冻结：标识角色是否被禁用，默认启用
-  isFrozen    Boolean    @default(false) @map("is_frozen")
   // 关系定义
   // 一对多：一个角色可分配给多个用户
   users       User[]       @relation("UserRole")

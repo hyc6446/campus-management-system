@@ -1,29 +1,13 @@
-/**
- * 认证服务模块
- * 
- * 此模块提供了核心的认证功能，包括用户身份验证、令牌生成与验证、
- * 密码加密等功能。作为NestJS应用程序的认证中心，它处理
- * 所有与身份验证相关的业务逻辑，与JWT策略、用户服务等组件协作，
- * 确保应用程序的安全访问控制。
- */
-
-// 导入NestJS核心组件
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-// 导入JWT服务，用于生成和验证JWT令牌
 import { JwtService } from '@nestjs/jwt';
-// 导入bcrypt库，用于密码哈希和验证
 import * as bcrypt from 'bcrypt';
-// 导入配置服务，用于获取应用配置
 import { ConfigService } from '@nestjs/config';
-// 导入用户、令牌仓库，用于用户数据访问操作
+import { TokenType } from '@prisma/client';
 import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
-// 导入用户实体类型
 import { User } from '@modules/user/entities/user.entity';
-// 导入Token实体类型
-import { TokenType } from '@prisma/client';
-// 导入JWT令牌载荷接口类型
 import { TokenPayload } from './jwt.strategy';
+import { DEFAULT_USER, UserWithFields, UserSelect } from '@common/types/entity/user.type';
 
 /**
  * 认证服务类
@@ -57,7 +41,7 @@ export class AuthService {
    * @param user 用户对象，包含生成令牌所需的用户信息
    * @returns 包含accessToken和refreshToken的对象
    */
-  async generateTokens(user: User) {
+  async generateTokens(user: UserWithFields<UserSelect>) {
     // 构建JWT令牌载荷，包含用户唯一标识、邮箱和角色信息
     const payload: TokenPayload = { 
       sub: user.id.toString(),      // 用户ID，JWT标准主题字段
@@ -104,11 +88,14 @@ export class AuthService {
    * @param password 明文密码
    * @returns 验证成功返回用户对象，失败返回null
    */
-  async validateUser(email: string, password: string): Promise<User | null> {
+  async validateUser<T extends UserSelect>(email: string, password: string):  Promise<UserWithFields<T> | null> {
     // 根据邮箱查找用户
-    const user = await this.userService.findByEmail(email,{include:{role:true}});
+    console.log("核心层 返回结果集对象:", DEFAULT_USER)
+    const user = await this.userService.findByEmail(email,DEFAULT_USER);
+    console.log("核心层 根据邮箱查找用户 结果:", user)
+
     // 检查用户是否存在且状态为激活
-    if (!user || !user.isActive) return null;
+    if (!user || user.deletedAt) return null;
     
     // 检查用户是否被锁定
     if (user.lockUntil && user.lockUntil > new Date()) {
@@ -142,7 +129,7 @@ export class AuthService {
     }
     
     // 验证成功，返回用户对象
-    return user;
+    return user as UserWithFields<T>;
   }
 
   /**
@@ -156,7 +143,7 @@ export class AuthService {
    * @returns 验证成功的用户对象
    * @throws UnauthorizedException 当令牌无效或用户不存在时抛出
    */
-  async validateRefreshToken(refreshToken: string) {
+  async validateRefreshToken<T extends UserSelect>(refreshToken: string,) {
     // 解析刷新令牌载荷
     const payload = await this.parseRefreshTokenPayload(refreshToken);
     console.log('刷新令牌payload',payload);

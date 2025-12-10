@@ -22,9 +22,6 @@ export class User {
   // 电话号码
   phone: string | null
 
-  // 账号状态
-  isActive: boolean
-
   // 角色ID，与Prisma schema中的roleId字段对应
   roleId: number
 
@@ -64,7 +61,6 @@ export class User {
     this.userName = partial.userName ?? null
     this.avatarUrl = partial.avatarUrl ?? null
     this.phone = partial.phone ?? null
-    this.isActive = partial.isActive ?? true
     this.roleId = partial.role?.roleId || partial.role?.id || 0
     this.role = partial.role || new Role({ id: this.roleId, name: '' })
     this.createdAt = partial.createdAt || new Date()

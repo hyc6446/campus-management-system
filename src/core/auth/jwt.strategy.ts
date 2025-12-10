@@ -81,8 +81,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(req: Request, payload: TokenPayload) {
     // 根据JWT载荷中的用户ID查找用户，将字符串转换为数字
     const user = await this.userService.findById(Number(payload.sub));
-    // 验证用户是否存在且状态为激活
-    if (!user || !user.isActive) {
+    // 验证用户是否存在且未被删除
+    if (!user || user.deletedAt) {
       throw new UnauthorizedException('用户不存在或已被禁用');
     }
 
