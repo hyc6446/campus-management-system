@@ -7,7 +7,7 @@ import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { User } from '@modules/user/entities/user.entity';
 import { TokenPayload } from './jwt.strategy';
-import { DEFAULT_USER, UserWithFields, UserSelect } from '@common/types/entity/user.type';
+import { DEFAULT_USER, WithFields } from '@common/types/entity/user.type';
 
 /**
  * 认证服务类
@@ -41,7 +41,8 @@ export class AuthService {
    * @param user 用户对象，包含生成令牌所需的用户信息
    * @returns 包含accessToken和refreshToken的对象
    */
-  async generateTokens(user: UserWithFields<UserSelect>) {
+  //todo
+  async generateTokens(user: any) {
     // 构建JWT令牌载荷，包含用户唯一标识、邮箱和角色信息
     const payload: TokenPayload = { 
       sub: user.id.toString(),      // 用户ID，JWT标准主题字段
@@ -88,10 +89,20 @@ export class AuthService {
    * @param password 明文密码
    * @returns 验证成功返回用户对象，失败返回null
    */
-  async validateUser<T extends UserSelect>(email: string, password: string):  Promise<UserWithFields<T> | null> {
+  async validateUser(email: string, password: string):  Promise<WithFields | null> {
     // 根据邮箱查找用户
     console.log("核心层 返回结果集对象:", DEFAULT_USER)
-    const user = await this.userService.findByEmail(email,DEFAULT_USER);
+    const user = await this.userService.findByEmailOptional(email,{
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        roleId: true,
+      },
+      include: {
+        role: true, // 包含角色信息用于权限判断
+      },
+    });
     console.log("核心层 根据邮箱查找用户 结果:", user)
 
     // 检查用户是否存在且状态为激活
@@ -129,7 +140,7 @@ export class AuthService {
     }
     
     // 验证成功，返回用户对象
-    return user as UserWithFields<T>;
+    return user as WithFields;
   }
 
   /**
@@ -143,7 +154,7 @@ export class AuthService {
    * @returns 验证成功的用户对象
    * @throws UnauthorizedException 当令牌无效或用户不存在时抛出
    */
-  async validateRefreshToken<T extends UserSelect>(refreshToken: string,) {
+  async validateRefreshToken(refreshToken: string,) {
     // 解析刷新令牌载荷
     const payload = await this.parseRefreshTokenPayload(refreshToken);
     console.log('刷新令牌payload',payload);

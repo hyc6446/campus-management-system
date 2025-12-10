@@ -5,8 +5,8 @@ import { File } from '@common/types/file.types';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index';
-import { DEFAULT_USER, UserFindOptions, UserSelect } from '@app/common/types/entity/user.type';
-import { UserWithFields } from '@app/common/types/entity/user.type';
+import { type Select,type Include, type FindOptions, type WithFields,type DefaultUser, DEFAULT_SAFE_USER_WITH_ROLE,DEFAULT_USER } from '@common/types/entity/user.type';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -30,38 +30,35 @@ export class UserService {
   }
 
   /**
-   * 通过邮箱查找用户
+   * 通过邮箱查找用户（可选）- 支持灵活查询配置
    * @param email 用户邮箱
-   * @returns 用户对象
-   * @throws NotFoundException 用户不存在
-   */
-  /**
-   * 通过邮箱查找用户（存在时返回用户，不存在时返回null）
-   * @param email 用户邮箱
+   * @param options 查询选项，支持select和include
    * @returns 用户对象或null
    */
-  async findByEmailOptional<T extends UserFindOptions>(email: string,options: T = { select: DEFAULT_USER } as T): Promise<UserWithFields<T> | null> {
-    console.log("用户服务层 findByEmailOptional options:", options)
+  async findByEmailOptional<Select=DefaultUser, Include = {}>(
+    email: string,
+    options?: FindOptions
+  ): Promise<WithFields> {
+    console.log("用户服务层 findByEmailOptional options:", options);
     
-    return this.userRepository.findByEmail(email,options);
+    // 使用默认配置（无密码）
+    // const defaultOptions = { select: DEFAULT_USER_WITHOUT_PASSWORD };
+    return this.userRepository.findByEmail(email, options);
   }
 
   /**
-   * 通过邮箱查找用户（不存在时抛出异常）
+   * 通过邮箱查找用户 - 支持灵活查询配置
    * @param email 用户邮箱
+   * @param options 查询选项，支持select和include
    * @returns 用户对象
-   * @throws NotFoundException 用户不存在
    */
-  async findByEmail<T extends UserFindOptions>(email: string,options: T = { select: DEFAULT_USER } as T): Promise<UserWithFields<T>> {
-    console.log("用户服务层 findByEmail options:", options)
-
-    const user = await this.findByEmailOptional(email,options);
+  async findByEmail<Select=DefaultUser, Include = {}>(email: string, options?: FindOptions): Promise<WithFields> {
+    const user = await this.findByEmailOptional(email, options);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
-    return user as UserWithFields<T>;
+    return user;
   }
-
   /**
    * 创建新用户
    * @param createUserDto 用户数据
@@ -186,7 +183,8 @@ export class UserService {
    * @param user 用户对象
    * @returns 安全的用户对象
    */
-  getSafeUser(user: UserWithFields<UserSelect>): Partial<UserWithFields<UserSelect>> {
+  // TODO
+  getSafeUser(user: any): Partial<any> {
     const { password, ...safeUser } = user;
     return safeUser;
   }

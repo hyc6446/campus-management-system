@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@core/prisma/prisma.service';
 import { User } from '../entities/user.entity';
 import { UpdateUserDto } from '../dto/index';
-import { UserFindOptions, UserWithFields } from '@app/common/types/entity/user.type';
+import { type Select,type Include, type FindOptions, type WithFields,DEFAULT_SAFE_USER_WITH_ROLE } from '@common/types/entity/user.type';
 
 @Injectable()
 export class UserRepository {
@@ -35,26 +35,21 @@ export class UserRepository {
   }
 
   /**
-   * 通过邮箱查找用户
+   * 通过邮箱查找用户 - 支持灵活查询配置
    * @param email 用户邮箱
+   * @param options 查询选项（Prisma原生格式，支持select和include）
    * @returns 用户对象或null
    */
-  async findByEmail<T extends UserFindOptions>(
-    email: string,
-    options?: T
-  ): Promise<UserWithFields<T> | null> {
-    console.log("用户仓库层 根据邮箱查找用户 options:", options)
-    // 使用 Prisma 原生查询，直接传递 select 和 include 选项
+  async findByEmail<Select,Include>(email: string, options: FindOptions=DEFAULT_SAFE_USER_WITH_ROLE): Promise<WithFields> {
+    console.log("用户仓库层 根据邮箱查找用户 options:", options);
     const userData = await this.prisma.user.findUnique({
       where: { 
         email,
         deletedAt: null,
       },
-      // 解构查询选项，Prisma 会自动处理 select 和 include
       ...options,
     });
-
-    return userData ? userData as UserWithFields<T> : null;
+    return userData as WithFields;
   }
 
   /**

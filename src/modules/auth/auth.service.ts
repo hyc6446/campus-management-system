@@ -3,8 +3,7 @@ import { UserService } from '@modules/user/user.service';
 import { RoleService } from '@modules/role/role.service';
 import { AuthService as CoreAuthService } from '@core/auth/auth.service';
 import { LoginDto, RegisterDto } from './dto/index';
-import { UserWithFields } from '@app/common/types/entity/user.type';
-import { UserSelect } from '@app/common/types/entity/user.type';
+import { WithFields } from '@common/types/entity/user.type';
 
 
 @Injectable()

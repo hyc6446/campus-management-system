@@ -1,6 +1,6 @@
 import type{ Prisma } from "@prisma/client";
 import { generateSelectExcept, generateFullSelect } from "@common/utils/peisma.util";
-import {SAFE_USER} from "@common/types/entity/user.type"
+import {DEFAULT_SAFE_USER} from "@common/types/entity/user.type"
 
 
 export const ROLE_FIELDS= [
@@ -34,7 +34,7 @@ export const SAFE_ROLE = generateSelectExcept(ROLE_FIELDS, ["updatedAt"]) satisf
 // 带用户信息
 export const SAFE_ROLE_WITH_USER = { 
     select: SAFE_ROLE, 
-    include: SAFE_USER 
+    include: DEFAULT_SAFE_USER 
 } satisfies RoleFindOptions;
 
 // 带权限信息
@@ -50,7 +50,7 @@ export const SAFE_ROLE_WITH_PERMISSIONS_AND_USER = {
     select: SAFE_ROLE, 
     include: {
         permissions: true,
-        users: SAFE_USER
+        users: DEFAULT_SAFE_USER
     } 
 } satisfies RoleFindOptions;
 
