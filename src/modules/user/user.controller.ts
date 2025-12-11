@@ -40,11 +40,12 @@ import {
   CreateUserDtoSwagger,
   UpdateUserDtoSwagger,
 } from './dto/index'
+import { FindUserById } from '@common/types/prisma.type'
 
 @ApiTags('用户管理')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @ApiOperation({ summary: '获取当前登录用户信息' })
   @ApiBearerAuth()
@@ -62,12 +63,12 @@ export class UserController {
   @ApiResponse({ status: 200, description: '资料更新成功', type: User })
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))
-  @AuditLog({ 
-    action: 'update', 
-    resource: 'User', 
+  @AuditLog({
+    action: 'update',
+    resource: 'User',
     resourceIdPath: '0.id',
     logParams: true,
-    logResult: true 
+    logResult: true
   })
   @Put('profile')
   updateProfile(
@@ -113,9 +114,9 @@ export class UserController {
   @ApiResponse({ status: 403, description: '无权限' })
   @UseGuards(AuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: number, @CurrentUser() currentUser: User) {
+  async findOne(@Param('id') id: number): Promise<FindUserById | null> {
     const user = await this.userService.findById(id)
-    return this.userService.getSafeUser(user as any)
+    return user
   }
 
   @ApiOperation({ summary: '更新用户信息' })

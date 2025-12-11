@@ -7,7 +7,7 @@ import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { User } from '@modules/user/entities/user.entity';
 import { TokenPayload } from './jwt.strategy';
-import { UserSelectType,UserSelect } from '@common/types/entity/user.type';
+// import { UserSelectType,UserSelect } from '@common/types/entity/user.type';
 
 
 /**
@@ -90,13 +90,9 @@ export class AuthService {
    * @param password 明文密码
    * @returns 验证成功返回用户对象，失败返回null
    */
-  async validateUser(email: string, password: string):  Promise<UserSelectType['WithFields'] | null> {
+  async validateUser(email: string, password: string):  Promise<User | null> {
     // 根据邮箱查找用户
-    console.log("核心层 返回结果集对象:")
-    
-    const user = await this.userService.findByEmailOptional(email);
-
-    console.log("核心层 根据邮箱查找用户 结果:", user)
+    const user:any = await this.userService.findByEmailOptional(email);
 
     // 检查用户是否存在且状态为激活
     if (!user || user.deletedAt) return null;
@@ -113,6 +109,7 @@ export class AuthService {
     
     // 使用bcrypt比较明文密码与存储的哈希密码是否匹配
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
       // 增加失败登录尝试次数
       const updatedUser = await this.userService.incrementFailedLoginAttempts(user.id);
@@ -133,7 +130,7 @@ export class AuthService {
     }
     
     // 验证成功，返回用户对象
-    return user as UserSelectType['WithFields'];
+    return user as User;
   }
 
   /**

@@ -29,7 +29,6 @@ export class AuthService {
       loginDto.email,
       loginDto.password,
     );
-    console.log("服务层 验证用户凭据 结果:", user)
 
     if (!user) {
       throw new UnauthorizedException('无效的邮箱或密码');
@@ -39,7 +38,7 @@ export class AuthService {
     
     // 返回用户信息(过滤敏感字段)
     const safeUser = await this.userService.getSafeUser(user);
-    console.log("服务层 登录 返回过滤敏感字段用户信息:", safeUser)
+
     return {
       accessToken,
       refreshToken,

@@ -219,7 +219,7 @@ export class AuditLogInterceptor implements NestInterceptor {
    * @returns 默认用户id
    */
   private async getDefaultUserId(): Promise<number> {
-   const user = await this.userService.findByEmailOptional('anonymous@example.com');
+   const user:any = await this.userService.findByEmailOptional('anonymous@example.com');
    return Number(user?.id) || 0
   }
   /**

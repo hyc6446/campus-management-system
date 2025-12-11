@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { MinioService } from '@core/minio/minio.service';
 import { File } from '@common/types/file.types';
 import { UserRepository } from './repositories/user.repository';
-import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, User } from '@prisma/client';
+import { DEFAULT_SAFE_USER_SELECT,DEFAULT_USER_SELECT } from '@common/prisma/composite.selects';
 
 
 @Injectable()
@@ -22,11 +22,25 @@ export class UserService {
    * @returns 用户对象
    * @throws NotFoundException 用户不存在
    */
+  // async findById(id: number): Promise<User> {
+  //   const user = await this.userRepository.findById(id);
+  //   if (!user) {
+  //     throw new NotFoundException('用户不存在');
+  //   }
+  //   return user;
+      
+  // }
   async findById(id: number): Promise<User> {
-    const user = await this.userRepository.findById(id);
+    const queryArgs:Prisma.UserFindUniqueArgs = {
+      where:{ id, deletedAt: null },
+      ...DEFAULT_USER_SELECT
+    }
+
+    const user = await this.userRepository.findById(queryArgs);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
+    
     return user;
   }
 
@@ -36,10 +50,10 @@ export class UserService {
    * @param options 查询选项，支持select和include
    * @returns 用户对象或null
    */
-  async findByEmailOptional<PrismaSelect>(email: string, options?: Partial<Prisma.UserFindUniqueArgs>): 
-  Promise<PrismaSelect | null> {
-    console.log("用户服务层 findByEmailOptional options:", options);
-    return this.userRepository.findByEmail(email, options) as PrismaSelect | null;
+  async findByEmailOptional(email: string): Promise<User | null> {
+    const user = await this.userRepository.findByEmail(email);
+    
+    return user as User | null;
   }
 
   /**
@@ -48,13 +62,12 @@ export class UserService {
    * @param options 查询选项，支持select和include
    * @returns 用户对象
    */
-  async findByEmail<PrismaSelect>(email: string, options?: Partial<Prisma.UserFindUniqueArgs>): 
-  Promise<PrismaSelect> {
-    const user = await this.userRepository.findByEmail(email, options);
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
-    return user as PrismaSelect;
+    return user as User;
   }
   /**
    * 创建新用户
@@ -96,7 +109,7 @@ export class UserService {
    * @param userProfileDto 个人资料数据
    * @returns 更新后的用户
    */
-  async updateProfile(id: number, userProfileDto: UserProfileDto): Promise<User> {
+  async updateProfile(id: number, userProfileDto: UserProfileDto): Promise<any> {
     const user = await this.findById(id);
     
     // 更新头像（如果有）
@@ -191,14 +204,19 @@ export class UserService {
    * @param userId 用户ID
    * @returns 更新后的用户对象
    */
-  async incrementFailedLoginAttempts(userId: number): Promise<User | null> {
-    const user = await this.userRepository.findById(userId);
+  async incrementFailedLoginAttempts(userId: number): Promise<any | null> {
+    const queryArgs:Prisma.UserFindUniqueArgs = {
+      where:{ id: userId, deletedAt: null },
+      ...DEFAULT_USER_SELECT
+    }
+    
+    const user = await this.userRepository.findById(queryArgs);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
     await this.userRepository.increment(userId, 'failedLoginAttempts', 1);
     // 返回更新后的用户对象
-    return this.userRepository.findById(userId);
+    return this.userRepository.findById(queryArgs);
   }
 
   /**
@@ -206,7 +224,11 @@ export class UserService {
    * @param userId 用户ID
    */
   async lockUser(userId: number): Promise<void> {
-    const user = await this.userRepository.findById(userId);
+    const queryArgs:Prisma.UserFindUniqueArgs = {
+      where:{ id: userId, deletedAt: null },
+      ...DEFAULT_USER_SELECT
+    }
+    const user = await this.userRepository.findById(queryArgs);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
@@ -227,7 +249,11 @@ export class UserService {
    * @returns 如果账户被锁定返回true，否则返回false
    */
   async isAccountLocked(userId: number): Promise<boolean> {
-    const user = await this.userRepository.findById(userId);
+    const queryArgs:Prisma.UserFindUniqueArgs = {
+      where:{ id: userId, deletedAt: null },
+      ...DEFAULT_USER_SELECT
+    }
+    const user = await this.userRepository.findById(queryArgs);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }

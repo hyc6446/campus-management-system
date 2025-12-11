@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@core/prisma/prisma.service';
 import { TokenType } from '@prisma/client';
 import { Token } from '../entities/token.entity';
-import { TokenSelect, TokenWithFields } from '@app/common/types/entity/token.type';
+// import { TokenSelect, TokenWithFields } from '@app/common/types/entity/token.type';
 
 @Injectable()
 export class TokenRepository {
@@ -159,7 +159,7 @@ export class TokenRepository {
    * @param includeUser 是否包含用户信息
    * @returns 创建的Token
    */
-  async create<T extends TokenSelect>(tokenData: Partial<Token>, select: T): Promise<TokenWithFields<T>> {
+  async create(tokenData: Partial<Token>): Promise<Token> {
     const createdToken = await this.prisma.token.create({
       data: {
         userId: tokenData.userId as number,
@@ -168,9 +168,8 @@ export class TokenRepository {
         expiresAt: tokenData.expiresAt || new Date(),
         deletedAt: tokenData.deletedAt || null,
       },
-      select
     });
-    return createdToken as unknown as TokenWithFields<T>;
+    return createdToken as Token;
   }
 
   /**
@@ -178,14 +177,14 @@ export class TokenRepository {
    * @param tokenDataList Token数据数组
    * @returns 创建的Token数组
    */
-  async createMany<T extends TokenSelect>(tokenDataList: Partial<Token>[], select: T): Promise<TokenWithFields<T>[]> {
+  async createMany(tokenDataList: Partial<Token>[]): Promise<Token[]> {
     // 因为createMany不支持include，所以需要逐个创建
     const createdTokens = [];
     for (const tokenData of tokenDataList) {
-      const token = await this.create(tokenData, select);
+      const token = await this.create(tokenData);
       createdTokens.push(token);
     }
-    return createdTokens as unknown as TokenWithFields<T>[];
+    return createdTokens as Token[];
   }
 
   /**

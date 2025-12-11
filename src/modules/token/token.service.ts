@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { TokenType } from '@prisma/client';
 import { TokenRepository } from './repositories/token.repository';
 import { Token } from './entities/token.entity';
-import { TokenSelect, TokenWithFields } from '@app/common/types/entity/token.type';
+// import { TokenSelect, TokenWithFields } from '@app/common/types/entity/token.type';
 
 @Injectable()
 export class TokenService {
@@ -161,9 +161,8 @@ export class TokenService {
    * @param tokenData Token数据
    * @returns 创建的Token
    */
-  async create<T extends TokenSelect>(tokenData: Partial<Token>, select: T = { id: true, userId: true, type: true } as T)
-  : Promise<TokenWithFields<T>> {
-    return this.tokenRepository.create(tokenData, select);
+  async create(tokenData: Partial<Token>): Promise<Token> {
+    return this.tokenRepository.create(tokenData);
   }
 
   /**
@@ -210,12 +209,11 @@ export class TokenService {
    * @param expiresAt 新的Refresh Token过期时间
    * @returns 创建的Refresh Token
    */
-  async createRefreshToken<T extends TokenSelect>(
+  async createRefreshToken(
     userId: number, 
     tokenValue: string, 
     expiresAt: Date,
-    select: T = { id: true, userId: true, type: true } as T
-  ): Promise<TokenWithFields<T>> {
+  ): Promise<Token> {
     // 先删除该用户所有旧的Refresh Token
     await this.deleteByUserIdAndType(userId, TokenType.REFRESH);
     // 创建新的Refresh Token
@@ -225,7 +223,7 @@ export class TokenService {
       type: TokenType.REFRESH,
       expiresAt,
       deletedAt: null
-    }, select);
+    });
   }
 
   /**

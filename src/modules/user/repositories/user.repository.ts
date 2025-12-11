@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@core/prisma/prisma.service';
-import { User } from '../entities/user.entity';
 import { UpdateUserDto } from '../dto/index';
-import type { Prisma } from '@prisma/client';
-import { DEFAULT_USER_AND_ROLE_FULL } from '@common/prisma/composite.selects';
+import type { Prisma, User } from '@prisma/client';
+import { DEFAULT_USER_AND_ROLE_FULL, DEFAULT_USER_SELECT } from '@common/prisma/composite.selects';
 
 @Injectable()
 export class UserRepository {
@@ -18,21 +17,13 @@ export class UserRepository {
    * @param id 用户ID
    * @returns 用户对象或null
    */
-  async findById(id: number): Promise<User | null> {
-    let userData;
-    userData = await this.prisma.user.findUnique({
-      where: { id },
-       include:{
-        role:{
-          select:{
-            id:true,
-            name:true,
-          }
-        }
-       }
-    });
-    // 将Prisma查询结果转换为User实体类实例，以支持虚拟属性name
-    return userData ? new User(userData) : null;
+  async findById<T extends Prisma.UserFindUniqueArgs>(queryArgs:T): 
+  Promise<Prisma.UserGetPayload<T> | null> {
+    const userData = await this.prisma.user.findUnique(queryArgs);
+    if (!userData) {
+      return null;
+    }
+    return userData as Prisma.UserGetPayload<T>;
   }
 
   /**
@@ -41,20 +32,14 @@ export class UserRepository {
    * @param options 查询选项（Prisma原生格式，支持select）
    * @returns 用户对象或null
    */
-  async findByEmail<Args extends Partial<Prisma.UserFindUniqueArgs>>(
-    email: string, 
-    options: Args = DEFAULT_USER_AND_ROLE_FULL as Args
-  ): Promise<Prisma.UserGetPayload<{
-    where: { email: string; deletedAt: null };
-    select?: Args['select'];
-    include?: Args['include'];
-  }> | null> {
-    console.log("用户仓库层 根据邮箱查找用户 options:", options);
-    const userData = await this.prisma.user.findUnique({
-      where: { email, deletedAt: null },
-      ...options,
-    });
-    return userData; // 不再需要类型断言！
+  async findByEmail(email:string): Promise<User | null> {
+    const queryArgs = {
+      where:{ email, deletedAt: null },
+      ...DEFAULT_USER_AND_ROLE_FULL,
+    }
+
+    const userData = await this.prisma.user.findUnique(queryArgs);
+    return userData;
   }
   /**
    * 创建新用户
@@ -81,9 +66,8 @@ export class UserRepository {
         } 
       },
     });
-    // 将创建的用户数据转换为User实体类实例
-    // 如果创建成功重新查询用户相关信息并返回
-    return new User(createdUser);
+
+    return createdUser;
   }
 
   /**
@@ -108,8 +92,7 @@ export class UserRepository {
       });
 
     
-    // 将更新后的用户数据转换为User实体类实例
-    return new User(updatedUser);
+    return updatedUser;
   }
 
   /**
@@ -131,8 +114,8 @@ export class UserRepository {
         } 
       },
     });
-    // 将更新后的用户数据转换为User实体类实例
-    return new User(updatedUser);
+
+    return updatedUser;
   }
 
   /**
@@ -216,7 +199,7 @@ export class UserRepository {
     ]);
 
     // 将用户数据数组转换为User实体类实例数组
-    const users = usersData.map(userData => new User(userData));
+    const users = usersData.map(userData => userData);
 
     return {
       data: users,
