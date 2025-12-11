@@ -7,7 +7,8 @@ import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { User } from '@modules/user/entities/user.entity';
 import { TokenPayload } from './jwt.strategy';
-import { DEFAULT_USER, WithFields } from '@common/types/entity/user.type';
+import { UserSelectType,UserSelect } from '@common/types/entity/user.type';
+
 
 /**
  * 认证服务类
@@ -89,20 +90,12 @@ export class AuthService {
    * @param password 明文密码
    * @returns 验证成功返回用户对象，失败返回null
    */
-  async validateUser(email: string, password: string):  Promise<WithFields | null> {
+  async validateUser(email: string, password: string):  Promise<UserSelectType['WithFields'] | null> {
     // 根据邮箱查找用户
-    console.log("核心层 返回结果集对象:", DEFAULT_USER)
-    const user = await this.userService.findByEmailOptional(email,{
-      select: {
-        id: true,
-        email: true,
-        password: true,
-        roleId: true,
-      },
-      include: {
-        role: true, // 包含角色信息用于权限判断
-      },
-    });
+    console.log("核心层 返回结果集对象:")
+    
+    const user = await this.userService.findByEmailOptional(email);
+
     console.log("核心层 根据邮箱查找用户 结果:", user)
 
     // 检查用户是否存在且状态为激活
@@ -140,7 +133,7 @@ export class AuthService {
     }
     
     // 验证成功，返回用户对象
-    return user as WithFields;
+    return user as UserSelectType['WithFields'];
   }
 
   /**

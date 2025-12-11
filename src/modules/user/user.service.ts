@@ -5,7 +5,8 @@ import { File } from '@common/types/file.types';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index';
-import { type Select,type Include, type FindOptions, type WithFields,type DefaultUser, DEFAULT_SAFE_USER_WITH_ROLE,DEFAULT_USER } from '@common/types/entity/user.type';
+import type { Prisma } from '@prisma/client';
+
 
 @Injectable()
 export class UserService {
@@ -35,15 +36,10 @@ export class UserService {
    * @param options 查询选项，支持select和include
    * @returns 用户对象或null
    */
-  async findByEmailOptional<Select=DefaultUser, Include = {}>(
-    email: string,
-    options?: FindOptions
-  ): Promise<WithFields> {
+  async findByEmailOptional<PrismaSelect>(email: string, options?: Partial<Prisma.UserFindUniqueArgs>): 
+  Promise<PrismaSelect | null> {
     console.log("用户服务层 findByEmailOptional options:", options);
-    
-    // 使用默认配置（无密码）
-    // const defaultOptions = { select: DEFAULT_USER_WITHOUT_PASSWORD };
-    return this.userRepository.findByEmail(email, options);
+    return this.userRepository.findByEmail(email, options) as PrismaSelect | null;
   }
 
   /**
@@ -52,12 +48,13 @@ export class UserService {
    * @param options 查询选项，支持select和include
    * @returns 用户对象
    */
-  async findByEmail<Select=DefaultUser, Include = {}>(email: string, options?: FindOptions): Promise<WithFields> {
-    const user = await this.findByEmailOptional(email, options);
+  async findByEmail<PrismaSelect>(email: string, options?: Partial<Prisma.UserFindUniqueArgs>): 
+  Promise<PrismaSelect> {
+    const user = await this.userRepository.findByEmail(email, options);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
-    return user;
+    return user as PrismaSelect;
   }
   /**
    * 创建新用户
