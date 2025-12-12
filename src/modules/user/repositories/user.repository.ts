@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@core/prisma/prisma.service';
 import { UpdateUserDto } from '../dto/index';
 import type { Prisma, User } from '@prisma/client';
-import { DEFAULT_USER_AND_ROLE_FULL, DEFAULT_USER_SELECT } from '@common/prisma/composite.selects';
+import { DEFAULT_USER_AND_ROLE_FULL, DEFAULT_USER_SELECT, DEFAULT_USER_WITH_ROLE } from '@common/prisma/composite.selects';
 
 @Injectable()
 export class UserRepository {
@@ -32,14 +32,49 @@ export class UserRepository {
    * @param options 查询选项（Prisma原生格式，支持select）
    * @returns 用户对象或null
    */
-  async findByEmail(email:string): Promise<User | null> {
+  // async findByEmail(email:string): Promise<User | null> {
+  //   const queryArgs = {
+  //     where:{ email, deletedAt: null },
+  //     ...DEFAULT_USER_AND_ROLE_FULL,
+  //   }
+
+  //   const userData = await this.prisma.user.findUnique(queryArgs);
+  //   return userData;
+  // }
+/**
+   * 通过唯一条件查找用户 - 支持灵活查询配置
+   * @param where 唯一查询条件
+   * @param options 查询选项（Prisma原生格式，支持select/include）
+   * @returns 用户对象或null
+   */
+  /**
+   * 通过唯一条件查找用户 - 支持灵活查询配置
+   * @param where 唯一查询条件
+   * @param options 查询选项（Prisma原生格式，支持select/include）
+   * @returns 用户对象或null，根据查询选项返回相应的字段和关联数据
+   */
+  async findUnique<K extends Prisma.UserWhereUniqueInput, T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'> = typeof DEFAULT_USER_WITH_ROLE>(
+    where: K,
+    options?: T
+  ): Promise<Prisma.UserGetPayload<{ where: K } & T> | null> {
     const queryArgs = {
-      where:{ email, deletedAt: null },
-      ...DEFAULT_USER_AND_ROLE_FULL,
-    }
+      where,
+      ...(options || DEFAULT_USER_WITH_ROLE),
+    } as { where: K } & T;
 
     const userData = await this.prisma.user.findUnique(queryArgs);
-    return userData;
+    return userData as Prisma.UserGetPayload<{ where: K } & T> | null; 
+  }
+
+  /**
+   * 通过邮箱查找用户 - 支持灵活查询配置
+   * @param email 用户邮箱
+   * @param options 查询选项（Prisma原生格式，支持select）
+   * @returns 用户对象或null
+   */
+  async findByEmail<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'> = typeof DEFAULT_USER_WITH_ROLE>(email: string, options?: T): 
+  Promise<Prisma.UserGetPayload<{ where: { email: string; deletedAt: null } } & T> | null> {
+    return this.findUnique({ email, deletedAt: null }, options);
   }
   /**
    * 创建新用户
