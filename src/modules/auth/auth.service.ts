@@ -25,10 +25,7 @@ export class AuthService {
       throw new UnauthorizedException('无效的邮箱');
     }
     // 2.验证用户凭据
-    const user = await this.coreAuthService.validateUser(
-      loginDto.email,
-      loginDto.password,
-    );
+    const user = await this.coreAuthService.validateUser( loginDto.email, loginDto.password );
 
     if (!user) {
       throw new UnauthorizedException('无效的邮箱或密码');

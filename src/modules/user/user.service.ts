@@ -22,18 +22,11 @@ export class UserService {
    * @returns 用户对象
    * @throws NotFoundException 用户不存在
    */
-  // async findById(id: number): Promise<User> {
-  //   const user = await this.userRepository.findById(id);
-  //   if (!user) {
-  //     throw new NotFoundException('用户不存在');
-  //   }
-  //   return user;
-  //     
-  // }
-  async findById(id: number): Promise<User> {
+  async findById<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'>>(id: number, options?: T): 
+  Promise<User | null> {
     const queryArgs:Prisma.UserFindUniqueArgs = {
       where:{ id, deletedAt: null },
-      ...DEFAULT_USER_SELECT
+      ...DEFAULT_USER_WITH_ROLE
     }
 
     const user = await this.userRepository.findById(queryArgs);
@@ -47,25 +40,15 @@ export class UserService {
   /**
    * 通过邮箱查找用户（可选）- 支持灵活查询配置
    * @param email 用户邮箱
-   * @returns 用户对象或null
-   */
-  async findByEmailOptional(email: string): Promise<any | null> {
-    const user = await this.userRepository.findByEmail(email);
-    
-    return user;
-  }
-  /**
-   * 通过邮箱查找用户（可选）- 支持灵活查询配置
-   * @param email 用户邮箱
    * @param options 查询选项，支持select和include
    * @returns 用户对象或null，包含默认的角色信息
    */
-  async findByEmailOptional2<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'>(email: string, options?: T): Promise<User | null> {
-    
+  async findByEmailOptional<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'>>(email: string, options?: T): 
+  Promise<User | null> {
+
     const where={ email, deletedAt: null };
-    
+
     const user = await this.userRepository.findUnique(where, options);
-    
     return user;
   }
   /**
@@ -73,8 +56,10 @@ export class UserService {
    * @param email 用户邮箱
    * @returns 用户对象
    */
-  async findByEmail(email: string): Promise<any> {
-    const user = await this.userRepository.findByEmail(email);
+  async findByEmail<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'>>(email: string, options?: T):
+  Promise<User> {
+    const where={ email, deletedAt: null };
+    const user = await this.userRepository.findByEmail(where, options);
     if (!user) {
       throw new NotFoundException('用户不存在');
     }

@@ -54,7 +54,6 @@ export class AuthController {
   })
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto)
-    console.log("登录接口返回结果:", result)
     return result
   }
 
