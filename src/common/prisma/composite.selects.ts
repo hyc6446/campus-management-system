@@ -1,7 +1,4 @@
-// src/selects/composite.selects.ts
-
 import type { Prisma } from '@prisma/client'
-
 import { DEFAULT_USER_FIELDS,DEFAULT_SAFE_USER_FIELDS, DEFAULT_USER_FULL_FIELDS} from './select/user-fields'
 import {DEFAULT_ROLE_FIELDS,DEFAULT_SAFE_ROLE_FIELDS,DEFAULT_ROLE_FULL_FIELDS} from './select/role-fields';
 

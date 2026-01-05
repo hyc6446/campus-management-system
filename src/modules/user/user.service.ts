@@ -6,6 +6,7 @@ import { UserRepository } from './repositories/user.repository';
 import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index';
 import type { Prisma, User } from '@prisma/client';
 import { DEFAULT_SAFE_USER_SELECT,DEFAULT_USER_SELECT,DEFAULT_USER_WITH_ROLE } from '@common/prisma/composite.selects';
+import { DEFAULT_USER_WITH_ROLE_TYPE } from '@common/types/prisma.type'
 
 
 @Injectable()
@@ -26,7 +27,8 @@ export class UserService {
   Promise<User | null> {
     const queryArgs:Prisma.UserFindUniqueArgs = {
       where:{ id, deletedAt: null },
-      ...DEFAULT_USER_WITH_ROLE
+      ...DEFAULT_USER_WITH_ROLE,
+      ...options,
     }
 
     const user = await this.userRepository.findById(queryArgs);
@@ -48,7 +50,7 @@ export class UserService {
 
     const where={ email, deletedAt: null };
 
-    const user = await this.userRepository.findUnique(where, options);
+    const user = await this.userRepository.findByEmail(where, options);
     return user;
   }
   /**
@@ -190,7 +192,7 @@ export class UserService {
    * @returns 安全的用户对象
    */
   // TODO
-  getSafeUser(user: any): Partial<any> {
+  getSafeUser(user: any): Partial<DEFAULT_USER_WITH_ROLE_TYPE> {
     const { password, ...safeUser } = user;
     return safeUser;
   }

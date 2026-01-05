@@ -22,22 +22,13 @@ export function setupSwagger(app: INestApplication, configService: ConfigService
         name: 'JWT',
         description: 'Enter JWT token',
         in: 'header',
-      },
-      'access-token',
+      }
     )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(swaggerConfig.path, app, document, {
     customSiteTitle: swaggerConfig.title,
-    customCss: `
-      .topbar {
-        display: none;
-      }
-      .swagger-ui .scheme-container {
-        display: none;
-      }
-    `,
     swaggerOptions: {
       tagsSorter: 'alpha',
       operationsSorter: 'alpha',

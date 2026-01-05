@@ -40,24 +40,24 @@ import {
   CreateUserDtoSwagger,
   UpdateUserDtoSwagger,
 } from './dto/index'
-import { FindUserById } from '@common/types/prisma.type'
+import { FindUserById,DEFAULT_USER_WITH_ROLE_TYPE } from '@common/types/prisma.type'
 
 @ApiTags('用户管理')
+@ApiBearerAuth()
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: '获取当前登录用户信息' })
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: '成功获取用户信息', type: User })
+  // @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard)
+  @ApiResponse({ status: 200, description: '成功获取用户信息', type: User })
   @Get('profile')
-  async getProfile(@CurrentUser() user: any) {
+  async getProfile(@CurrentUser() user: DEFAULT_USER_WITH_ROLE_TYPE) {
     return this.userService.getSafeUser(user)
   }
 
   @ApiOperation({ summary: '更新个人资料' })
-  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UserProfileDtoSwagger })
   @ApiResponse({ status: 200, description: '资料更新成功', type: User })
@@ -68,7 +68,7 @@ export class UserController {
     resource: 'User',
     resourceIdPath: '0.id',
     logParams: true,
-    logResult: true
+    logResult: true,
   })
   @Put('profile')
   updateProfile(
@@ -80,7 +80,6 @@ export class UserController {
   }
 
   @ApiOperation({ summary: '获取用户列表 (管理员)' })
-  @ApiBearerAuth()
   @ApiQuery({ name: 'page', required: false, type: Number, description: '页码', example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: '每页数量', example: 10 })
   @ApiResponse({ status: 200, description: '成功获取用户列表', type: User, isArray: true })
@@ -96,7 +95,6 @@ export class UserController {
   }
 
   @ApiOperation({ summary: '创建新用户 (管理员)' })
-  @ApiBearerAuth()
   @ApiBody({ type: CreateUserDtoSwagger })
   @ApiResponse({ status: 201, description: '用户创建成功', type: User })
   @ApiResponse({ status: 403, description: '无权限' })
@@ -107,7 +105,6 @@ export class UserController {
   }
 
   @ApiOperation({ summary: '获取指定用户信息' })
-  @ApiBearerAuth()
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
   @ApiResponse({ status: 200, description: '成功获取用户信息', type: User })
   @ApiResponse({ status: 404, description: '用户不存在' })
@@ -120,7 +117,6 @@ export class UserController {
   }
 
   @ApiOperation({ summary: '更新用户信息' })
-  @ApiBearerAuth()
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
   @ApiBody({ type: UpdateUserDtoSwagger })
   @ApiResponse({ status: 200, description: '用户更新成功', type: User })
@@ -137,7 +133,6 @@ export class UserController {
   }
 
   @ApiOperation({ summary: '删除用户 (管理员)' })
-  @ApiBearerAuth()
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
   @ApiResponse({ status: 204, description: '用户删除成功' })
   @ApiResponse({ status: 403, description: '无权限' })

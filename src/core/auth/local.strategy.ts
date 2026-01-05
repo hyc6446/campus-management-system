@@ -1,10 +1,3 @@
-/**
- * 本地认证策略模块
- * 
- * 此模块实现了基于用户名密码的本地认证策略，是NestJS Passport认证系统的一部分。
- * 该策略负责处理用户登录时的凭据验证，将接收到的邮箱和密码与存储的用户信息进行匹配，
- * 验证成功后返回用户对象，供Passport框架进行后续处理。
- */
 
 // 导入passport-local策略，用于用户名密码验证
 import { Strategy } from 'passport-local';
@@ -17,14 +10,6 @@ import { AuthService } from './auth.service';
 // 导入用户实体类型
 import { User } from '@modules/user/entities/user.entity';
 
-/**
- * 本地认证策略类
- * 
- * 继承自PassportStrategy并配置为使用local策略，
- * 用于处理用户登录时的凭据验证逻辑。
- * 
- * 默认使用'local'作为策略名称，可在@UseGuards(AuthGuard('local'))中引用。
- */
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   /**
@@ -56,16 +41,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
    */
   // TODO 优化异常处理，返回自定义错误信息
   async validate(email: string, password: string): Promise<any> {
-    // 调用认证服务的validateUser方法进行实际的凭据验证
     const user = await this.authService.validateUser(email, password);
     
-    // 验证失败处理
     if (!user) {
-      // 抛出未授权异常，NestJS会自动将其转换为401 Unauthorized响应
       throw new UnauthorizedException('无效的邮箱或密码');
     }
     
-    // 验证成功，返回用户对象
     return user;
   }
 }

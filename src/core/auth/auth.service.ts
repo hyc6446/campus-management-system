@@ -7,8 +7,6 @@ import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { User } from '@modules/user/entities/user.entity';
 import { TokenPayload } from './jwt.strategy';
-// import { UserSelectType,UserSelect } from '@common/types/entity/user.type';
-
 
 /**
  * 认证服务类

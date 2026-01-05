@@ -49,8 +49,8 @@ export class AuthController {
   @AuditLog({ 
     action: 'login', 
     resource: 'User',
-    resourceIdPath: 'data.data.id',
-    userIdPath: 'data.data.id',
+    resourceIdPath: 'data.data.user.id',
+    userIdPath: 'data.data.user.id',
   })
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto)

@@ -39,7 +39,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      ...safeUser,
+      user:safeUser,
     };
   }
 
@@ -70,7 +70,6 @@ export class AuthService {
       roleId: role.id,
       isActive: true,
     });
-    console.log('创建新用户user',user);
     return user;
   }
 
