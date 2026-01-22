@@ -1,5 +1,4 @@
 import { ExtractJwt, Strategy, StrategyOptionsWithRequest } from 'passport-jwt';
-// 导入NestJS Passport模块的PassportStrategy装饰器，用于扩展Passport策略
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -39,7 +38,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   ) {
     // 配置JWT策略选项
     const options: StrategyOptionsWithRequest = {
-      // 指定JWT令牌的提取方式：从请求头的Authorization字段中提取Bearer令牌
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       // 设置是否忽略过期时间：false表示令牌过期后将拒绝验证
       ignoreExpiration: false,
@@ -65,16 +63,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
    * @throws UnauthorizedException 当用户不存在或已被禁用时抛出
    */
   async validate(req: Request, payload: TokenPayload) {
-    // 根据JWT载荷中的用户ID查找用户，将字符串转换为数字
-    const user = await this.userService.findById(Number(payload.sub));
-    // 验证用户是否存在且未被删除
+    const user = await this.userService.findByIdWithRole(Number(payload.sub));
     if (!user || user.deletedAt) {
       throw new UnauthorizedException('用户不存在或已被禁用');
     }
-
     // 将验证通过的用户信息附加到请求对象，便于后续中间件和控制器访问
     req.user = user;
-    // 返回用户对象，Passport会将此对象添加到请求对象的user属性（与上一行作用相同）
     return user;
   }
 }

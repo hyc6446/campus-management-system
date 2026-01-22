@@ -41,22 +41,9 @@ export class AuditLogRepository {
    * @param auditLogData 审计日志数据
    * @returns 创建的审计日志
    */
-  async create(auditLogData: Partial<CreateAuditLogDto>): Promise<AuditLog> {
+  async create(auditLogData: CreateAuditLogDto): Promise<AuditLog> {
     const createdAuditLog = await this.prisma.auditLog.create({
-      data: {
-        userId: auditLogData.userId as number,
-        action: auditLogData.action as string,
-        resource: auditLogData.resource as string,
-        resourceId: auditLogData.resourceId as string,
-        details: auditLogData.details as string,
-        duration: auditLogData.duration as number,
-        timestamp: auditLogData.timestamp as Date,
-        isSuccess: auditLogData.isSuccess as boolean,
-        method: auditLogData.method as string,
-        path: auditLogData.path as string,
-        ip: auditLogData.ip as string,
-        userAgent: auditLogData.userAgent as string,
-      },
+      data: auditLogData,
     });
     
     // 将创建的审计日志数据转换为AuditLog实体类实例

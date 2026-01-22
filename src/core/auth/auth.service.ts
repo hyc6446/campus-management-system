@@ -5,8 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { TokenType } from '@prisma/client';
 import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
-import { User } from '@modules/user/entities/user.entity';
 import { TokenPayload } from './jwt.strategy';
+import * as all from '@app/common/prisma-types'
 
 /**
  * 认证服务类
@@ -40,7 +40,6 @@ export class AuthService {
    * @param user 用户对象，包含生成令牌所需的用户信息
    * @returns 包含accessToken和refreshToken的对象
    */
-  //todo
   async generateTokens(user: any) {
     // 构建JWT令牌载荷，包含用户唯一标识、邮箱和角色信息
     const payload: TokenPayload = { 
@@ -88,15 +87,17 @@ export class AuthService {
    * @param password 明文密码
    * @returns 验证成功返回用户对象，失败返回null
    */
-  async validateUser(email: string, password: string):  Promise<User | null> {
+  async validateUser(email: string, password: string):  Promise<all.USER_FULL_ROLE_DEFAULT_TYPE | null> {
     // 根据邮箱查找用户
-    const user:any = await this.userService.findByEmailOptional(email);
+    const user = await this.userService.findByEmailFullForLogin(email);
     // 检查用户是否存在且状态为激活
-    if (!user || user.deletedAt) return null;
+    if (!user || user.deletedAt){
+      throw new UnauthorizedException('用户不存在或已被停用');
+    };
     
     // 检查用户是否被锁定
     if (user.lockUntil && user.lockUntil > new Date()) {
-      throw new UnauthorizedException('账号已被锁定');
+      throw new UnauthorizedException('该账号已被锁定');
     }
     
     // 如果账户曾经被锁定但现在已经过期，自动解锁
@@ -109,12 +110,13 @@ export class AuthService {
 
     if (!isPasswordValid) {
       // 增加失败登录尝试次数
-      const updatedUser = await this.userService.incrementFailedLoginAttempts(user.id);
-      if (!updatedUser)  return null;
+      const failUser = await this.userService.incrementFailedLoginAttempts(user.id);
+      if (!failUser)  return null;
       
       // 检查更新后的用户是否超过最大失败尝试次数，若超过则锁定用户
-      if (updatedUser && updatedUser.failedLoginAttempts >= this.configService.get('auth.maxLoginAttempts')) {
-        await this.userService.lockUser(updatedUser.id);
+      if (failUser && failUser.failedLoginAttempts >= this.configService.get('auth.maxLoginAttempts')) {
+        await this.userService.lockUser(failUser.id);
+        throw new UnauthorizedException('该账号已被锁定');
       }
       
       // 密码验证失败，返回null
@@ -127,7 +129,7 @@ export class AuthService {
     }
     
     // 验证成功，返回用户对象
-    return user as User;
+    return user;
   }
 
   /**

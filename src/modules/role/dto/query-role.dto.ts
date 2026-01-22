@@ -1,77 +1,106 @@
-/**
- * 查询角色请求数据传输对象（DTO）
- * 
- * 此文件定义了查询角色时所需的数据结构、验证规则和Swagger文档配置。
- * 包含三个核心部分：
- * 1. Zod验证模式：用于运行时验证请求数据
- * 2. TypeScript类型：用于编译时类型检查
- * 3. Swagger文档类：用于生成API文档
- */
-
-// 导入Swagger的ApiProperty装饰器，用于定义API文档中的请求字段
-import { ApiProperty } from '@nestjs/swagger';
-// 导入Zod库，用于定义数据验证模式
+import { IsOptional, IsInt,IsNumber, Min, Max, IsString, IsEnum, IsIn } from 'class-validator';
+import { Type,Transform  } from 'class-transformer';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
+import { ROLE_ALLOWED_SORT_FIELDS } from '@app/common/prisma-types';
 import { z } from 'zod';
 
-/**
- * 查询角色请求验证模式
- * 
- * 使用Zod库定义的验证规则，确保查询角色请求数据符合预期格式：
- * - page：必须是整数且大于等于1
- * - pageSize：必须是整数且大于等于1
- * 
- * 此模式用于在请求到达控制器时验证请求体数据的有效性
- */
+
 export const QueryRoleSchema = z.object({
-  // 页码字段：必须是整数且大于等于1
-  page: z.number().int().min(1, '页码必须大于等于1'),
-  // 每页数量字段：必须是整数且大于等于1
-  pageSize: z.number().int().min(10, '每页数量必须大于等于10'),
+  page: z.coerce.number().int().min(1).default(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(10).optional(),
+  // 筛选参数,支持多字段筛选
+  id: z.coerce.number().int().optional(),
+  name: z.string().optional(),
+  createdAt: z.union([z.string(), z.date()]).optional(),
+  // 排序方式
+  sortBy: z.string().optional().default('createdAt'),
+  order: z.string().optional().default('desc'),
+}).transform((data) => {
+  const originalSortFields = data.sortBy.split(',');
+  const validSortFields: string[] = [];
+  const originalSortOrders = data.order.split(',');
+  const validSortOrders: string[] = [];
+  originalSortFields.forEach((field, index) => {
+    const trimmedField = field.trim();
+    if (ROLE_ALLOWED_SORT_FIELDS.includes(trimmedField as any)) {
+      validSortFields.push(trimmedField);
+      const originalOrder = originalSortOrders[index]?.trim().toLowerCase() || 'desc';
+      const validOrder = ['asc', 'desc'].includes(originalOrder) ? originalOrder : 'desc';
+      validSortOrders.push(validOrder);
+    }
+  });
+  if (validSortFields.length === 0) {
+    validSortFields.push('createdAt');
+    validSortOrders.push('desc');
+  }
+  return {
+    ...data,
+    sortBy: validSortFields.join(','),
+    order: validSortOrders.join(',')
+  }
 });
 
-/**
- * 查询角色请求类型定义
- * 
- * 通过z.infer从QueryRoleSchema自动推断出TypeScript类型，
- * 确保类型安全并与验证规则保持一致
- * 
- * 此类型用于在控制器和服务层中进行类型检查
- */
+
 export type QueryRoleDto = z.infer<typeof QueryRoleSchema>;
 
 /**
- * 查询角色请求Swagger文档类
- * 
- * 专门用于生成Swagger API文档的类，定义了API文档中显示的字段信息：
- * - 字段名称、类型、示例值、描述等
- * 
- * 此类不会在实际业务逻辑中使用，仅用于文档生成
+ * 角色查询DTO
+ * 统一处理分页、筛选和排序条件
  */
 export class QueryRoleDtoSwagger {
-  // 页码字段的Swagger文档配置
-  @ApiProperty({
-    example: 1,                    // 文档中显示的示例值
-    description: '页码',            // 文档中显示的字段描述
-    type: Number,                  // 字段类型
-    required: true                 // 是否为必填字段
-  })
-  page: number = 1;
+  @ApiPropertyOptional({ default: 1, description: '页码' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Transform(({ value }) => parseInt(value))
+  page?: number = 1;
 
-/**
- * 登录请求类型定义
- * 
- * 通过z.infer从LoginSchema自动推断出TypeScript类型，
- * 确保类型安全并与验证规则保持一致
- * 
- * 此类型用于在控制器和服务层中进行类型检查
- */
-  // 每页数量字段的Swagger文档配置
-  @ApiProperty({
-    example: 10,                   // 文档中显示的示例值
-    description: '每页数量',        // 文档中显示的字段描述
-    type: Number,                  // 字段类型
-    required: true                 // 是否为必填字段
-  })
-  pageSize: number = 10;
+  @ApiPropertyOptional({ default: 10, description: '每页数量' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: '每页数量必须是整数' })
+  @Min(5, { message: '每页数量至少5条' })
+  @Max(100, { message: '每页数量最多100条' })
+  @Transform(({ value }) => parseInt(value))
+  limit?: number = 10;
+
+  // 筛选参数,支持多字段筛选
+  @ApiPropertyOptional({ description: '角色ID', example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: '角色ID必须是整数' })
+  @Transform(({ value }) => parseInt(value))
+  id?: number;
+
+  @ApiPropertyOptional({ description:'角色名称', example: 'ADMIN' })
+  @IsOptional()
+  @Type(() => String)
+  @IsString({ message: '角色名称必须是字符串' })
+  @Transform(({ value }) => value.trim())
+  name?: string;
+
+  @ApiPropertyOptional({ description: '创建时间', example: '2025-01-01' })
+  @IsOptional()
+  @Type(() => String)
+  @IsString({ message: '创建时间必须是字符串' })
+  @Transform(({ value }) => value.trim())
+  createdAt?: string;
+
+  // 排序参数
+  @ApiPropertyOptional({ description: '排序字段', example: 'createdAt' })
+  @IsOptional()
+  @Type(() => String)
+  @IsString({ message: '排序参数必须是字符串' })
+  // @IsIn(ALLOWED_SORT_FIELDS, { message: '排序字段无效' })
+  // @Transform(({ value }) => value.trim())
+  sortBy?: string;
+
+  // 排序方式
+  // @ApiPropertyOptional({ description: '排序方式', example: 'asc' })
+  // @IsOptional()
+  // @IsString({ message: '排序方式必须是字符串' })
+  // @IsIn(['ASC', 'DESC'], { message: '排序方式无效' })
+  // @Transform(({ value }) => value.trim().toUpperCase())
+  // order?: 'ASC' | 'DESC' = 'DESC';
 }
-

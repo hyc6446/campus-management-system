@@ -41,6 +41,16 @@ services:
       "
     networks:
       - campus-network
+  
+  redis:
+    image: docker.1ms.run/library/redis:7.4.1
+    container_name: campus-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - campus-network
+
+
 
 networks:
   campus-network:

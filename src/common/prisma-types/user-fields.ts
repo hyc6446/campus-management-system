@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 
 // 字段列表（用于工具函数，可选）
-export const USER_TABLE_FIELDS = [
+ const USER_TABLE_FIELDS = [
   'id',
   'email',
   'password',
@@ -17,7 +17,7 @@ export const USER_TABLE_FIELDS = [
 ] as const;
 
 // 预设字段对象（只包含 User 自身字段，不包含 role 等关联）
-export const DEFAULT_USER_FIELDS = {
+ const DEFAULT_USER_FIELDS = {
   id: true,
   email: true,
   userName: true,
@@ -28,14 +28,28 @@ export const DEFAULT_USER_FIELDS = {
   deletedAt: true,
 } satisfies Prisma.UserSelect;
 
-export const DEFAULT_SAFE_USER_FIELDS = {
+ const SAFE_USER_FIELDS = {
   ...DEFAULT_USER_FIELDS,
   failedLoginAttempts: true,
   lockUntil: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
 
-export const DEFAULT_USER_FULL_FIELDS = {
-  ...DEFAULT_SAFE_USER_FIELDS,
+ const FULL_USER_FIELDS = {
+  ...SAFE_USER_FIELDS,
   password: true,
 } satisfies Prisma.UserSelect;
+
+// 允许的查询筛选字段
+const USER_ALLOWED_FILTER_FIELDS = [ "id", "email", "userName","phone", "createdAt", "deletedAt" ] as const;
+// 允许的排序字段
+const USER_ALLOWED_SORT_FIELDS = [ "id", "createdAt" ] as const;
+
+export {
+  USER_TABLE_FIELDS,
+  DEFAULT_USER_FIELDS,
+  SAFE_USER_FIELDS,
+  FULL_USER_FIELDS,
+  USER_ALLOWED_FILTER_FIELDS,
+  USER_ALLOWED_SORT_FIELDS,
+}

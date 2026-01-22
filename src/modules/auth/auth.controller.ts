@@ -1,8 +1,9 @@
 import {Controller,Post,Body,UsePipes} from '@nestjs/common'
-import { ZodValidationPipe } from '@common/pipes/validation.pipe'
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger'
+import { ZodValidationPipe } from '@common/pipes/validation.pipe'
 import { AuthService } from '@modules/auth/auth.service'
-
+import { AuditLog } from '@app/common/decorators/audit-log.decorator'
+import { PublicAuth } from '@app/common/decorators/public-auth.decorator'
 import {
   LoginDto,
   LoginSchema,
@@ -14,8 +15,7 @@ import {
   RefreshTokenSchema,
   RefreshDtoSwagger,
 } from '@modules/auth/dto/index'
-import { AuditLog } from '@app/common/decorators/audit-log.decorator'
-import { PublicAuth } from '@app/common/decorators/public-auth.decorator'
+
 
 @ApiTags('认证')
 @Controller('auth')
@@ -46,12 +46,12 @@ export class AuthController {
   @ApiResponse({ status: 401, description: '无效的凭据' })
   @Post('login')
   @UsePipes(new ZodValidationPipe(LoginSchema))
-  @AuditLog({ 
-    action: 'login', 
-    resource: 'User',
-    resourceIdPath: 'data.data.user.id',
-    userIdPath: 'data.data.user.id',
-  })
+  // @AuditLog({ 
+  //   action: 'login', 
+  //   resource: 'User',
+  //   resourceIdPath: 'data.data.user.id',
+  //   userIdPath: 'data.data.user.id',
+  // })
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto)
     return result
@@ -75,12 +75,12 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '无效的输入数据' })
   @Post('register')
   @UsePipes(new ZodValidationPipe(RegisterSchema))
-  @AuditLog({ 
-    action: 'register', 
-    resource: 'User',
-    resourceIdPath: 'data.data.id',
-    userIdPath: 'data.data.id',
-  })
+  // @AuditLog({ 
+  //   action: 'register', 
+  //   resource: 'User',
+  //   resourceIdPath: 'data.data.id',
+  //   userIdPath: 'data.data.id',
+  // })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto)
   }

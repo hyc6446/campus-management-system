@@ -22,7 +22,7 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     // 1.检查是否为默认账户
     if (loginDto.email === 'anonymous@example.com') {
-      throw new UnauthorizedException('无效的邮箱');
+      throw new UnauthorizedException('无效的账户');
     }
     // 2.验证用户凭据
     const user = await this.coreAuthService.validateUser( loginDto.email, loginDto.password );
@@ -67,8 +67,7 @@ export class AuthService {
       email: registerDto.email,
       password: await this.coreAuthService.hashPassword(registerDto.password),
       userName: registerDto.username,
-      roleId: role.id,
-      isActive: true,
+      roleId: role.id
     });
     return user;
   }

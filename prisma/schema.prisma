@@ -10,21 +10,21 @@ datasource db {
 // 角色表 - 定义系统中的角色类型，如管理员、教师、学生等
 model Role {
   // 主键：自增ID
-  id        Int          @id @default(autoincrement()) @map("id")
+  id          Int          @id @default(autoincrement()) @map("id")
   // 角色名称：唯一约束，用于标识角色类型
-  name      String       @unique @map("name")
+  name        String       @unique @map("name")
   // 创建时间：记录角色创建时间
-  createdAt DateTime     @default(now()) @map("created_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
   // 更新时间：记录角色最后更新时间
-  updatedAt DateTime?    @updatedAt @map("updated_at")
+  updatedAt   DateTime?    @updatedAt @map("updated_at")
   // 删除时间戳：标记角色是否被禁用
-  deletedAt DateTime? @map("deleted_at")
+  deletedAt   DateTime?    @map("deleted_at")
   // 关系定义
   // 一对多：一个角色可分配给多个用户
   users       User[]       @relation("UserRole")
   // 一对多：一个角色可拥有多个权限
   permissions Permission[] @relation("RolePermission")
-  
+
   // 映射到数据库表名
   @@map("roles")
 }
@@ -32,37 +32,37 @@ model Role {
 // 用户基础表 - 存储系统所有用户信息
 model User {
   // 主键：自增ID
-  id          Int       @id @default(autoincrement()) @map("id")
+  id                  Int       @id @default(autoincrement()) @map("id")
   // 邮箱：唯一约束，用于用户登录和系统通知
-  email       String    @unique @map("email")
+  email               String    @unique @map("email")
   // 密码：存储加密后的哈希值，确保安全性
-  password    String    @map("password")
+  password            String    @map("password")
   // 用户名：用户登录名
-  userName    String?   @map("user_name")
+  userName            String?   @map("user_name")
   // 头像URL：用户头像图片的存储路径
-  avatarUrl   String?   @map("avatar_url")
+  avatarUrl           String?   @map("avatar_url")
   // 电话号码：用户联系方式
-  phone       String?   @map("phone")
+  phone               String?   @map("phone")
   // 外键：关联到角色表，标识用户所属角色
-  roleId      Int       @map("role_id")
+  roleId              Int       @map("role_id")
   // 多对一：用户属于一个角色
-  role        Role      @relation("UserRole", fields: [roleId], references: [id])
+  role                Role      @relation("UserRole", fields: [roleId], references: [id])
   // 失败登录尝试次数：记录用户连续失败登录次数，用于防止暴力攻击
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
   // 账号锁定时间：记录用户账号被锁定的时间，用于防止暴力攻击
   lockUntil           DateTime? @map("lock_until")
   // 创建时间：记录用户注册时间
-  createdAt   DateTime  @default(now()) @map("created_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
   // 更新时间：记录用户信息最后更新时间
-  updatedAt DateTime? @updatedAt @map("updated_at")
+  updatedAt           DateTime? @updatedAt @map("updated_at")
   // 软删除时间戳：标记用户是否被删除
-  deletedAt   DateTime? @map("deleted_at")
-  
+  deletedAt           DateTime? @map("deleted_at")
+
   // 反向关系定义
   // 一对多：用户的所有审计日志
-  auditLogs   AuditLog[]
+  auditLogs AuditLog[]
   // 一对多：用户的所有令牌
-  tokens      Token[]
+  tokens    Token[]
 
   // 映射到数据库表名
   @@map("users")
@@ -71,23 +71,24 @@ model User {
 // 权限表 - 定义系统中的权限点，使用RBAC模型
 model Permission {
   // 主键：自增ID
-  id        Int      @id @default(autoincrement()) @map("id")
+  id         Int       @id @default(autoincrement()) @map("id")
   // 操作类型：如read、create、update、delete等
-  action    String   @map("action")
+  action     String    @map("action")
   // 操作对象：如User、Student、Course等资源
-  subject   String   @map("subject")
+  subject    String    @map("subject")
   // 权限条件：用于细粒度权限控制的JSON格式条件
-  conditions Json?   @map("conditions")
+  conditions Json?     @map("conditions")
   // 外键：关联到角色表
-  roleId    Int      @map("role_id")
+  roleId     Int       @map("role_id")
   // 多对一：权限属于一个角色
-  role      Role     @relation("RolePermission", fields: [roleId], references: [id])
+  role       Role      @relation("RolePermission", fields: [roleId], references: [id])
   // 创建时间：记录权限创建时间
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
   // 更新时间：记录权限最后更新时间
-  updatedAt DateTime? @updatedAt @map("updated_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
   // 删除时间戳：标记权限是否被删除
-  deletedAt DateTime? @map("deleted_at")
+  deletedAt  DateTime? @map("deleted_at")
+
   // 唯一约束：确保同一角色对同一资源的同一操作只有一条权限记录
   @@unique([action, subject, roleId], name: "permission_action_subject_role_unique")
   // 映射到数据库表名
@@ -97,39 +98,40 @@ model Permission {
 // 审计日志 - 记录系统关键操作，用于安全审计和问题追踪
 model AuditLog {
   // 主键：自增ID
-  id         Int      @id @default(autoincrement()) @map("id")
+  id         Int       @id @default(autoincrement()) @map("id")
   // 外键：关联到用户表
-  userId     Int      @map("user_id")
+  userId     Int       @map("user_id")
   // 多对一：日志由用户触发
-  user       User     @relation(fields: [userId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
   // 操作类型：记录具体的操作行为
-  action     String   @map("action")
+  action     String    @map("action")
   // 操作资源类型：记录操作的实体类型
-  resource   String   @map("resource")
+  resource   String    @map("resource")
   // 操作的具体资源ID：指向被操作的具体记录
-  resourceId String?  @map("resource_id")
+  resourceId String?   @map("resource_id")
   // HTTP方法：记录触发操作的HTTP方法（如GET、POST等）
-  method     String   @map("method")
+  method     String    @map("method")
   // 请求路径：记录触发操作的URL路径
-  path       String   @map("path")
+  path       String    @map("path")
   // 操作时长：记录操作处理时间（毫秒）
-  duration   Int      @map("duration")
+  duration   Int       @map("duration")
   // 操作时间：记录操作发生的时间
   timestamp  DateTime? @default(now()) @map("timestamp")
   // 是否成功：标识操作是否执行成功
-  isSuccess  Boolean  @default(true) @map("is_success")
+  isSuccess  Boolean   @default(true) @map("is_success")
   // 操作详情：以JSON格式存储操作的详细信息
-  details    Json     @map("details")
+  details    Json      @map("details")
   // 用户IP地址：记录操作时的IP地址
-  ip         String?  @map("ip_address")
+  ip         String?   @map("ip_address")
   // 用户浏览器信息：记录操作时的浏览器环境
-  userAgent  String?  @map("user_agent")
+  userAgent  String?   @map("user_agent")
   // 操作时间：记录操作发生的时间
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
   // 更新时间：记录日志最后更新时间
   updatedAt  DateTime? @updatedAt @map("updated_at")
   // 软删除时间戳：标记日志是否被删除
   deletedAt  DateTime? @map("deleted_at")
+
   // 映射到数据库表名
   @@map("audit_logs")
 }
@@ -137,25 +139,39 @@ model AuditLog {
 // 访问令牌 - 管理用户的身份令牌
 model Token {
   // 主键：自增ID
-  id        Int      @id @default(autoincrement()) @map("id")
+  id        Int       @id @default(autoincrement()) @map("id")
   // 外键：关联到用户表
-  userId    Int      @map("user_id")
+  userId    Int       @map("user_id")
   // 多对一：令牌属于用户
-  user      User     @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
   // 令牌值：唯一约束，用于身份验证
-  token     String   @unique @map("token")
+  token     String    @unique @map("token")
   // 令牌类型：标识令牌的用途（ACCESS、REFRESH等）
   type      TokenType @map("type")
   // 过期时间：令牌的有效期
-  expiresAt DateTime @map("expires_at")
+  expiresAt DateTime  @map("expires_at")
   // 创建时间：记录令牌创建时间
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
   // 更新时间：记录令牌状态最后更新时间
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
   // 添加软删除字段
   deletedAt DateTime? @map("deleted_at")
+
   // 映射到数据库表名
   @@map("tokens")
+}
+
+// 定义权限的操作类型和操作对象表
+model RuleConfig {
+  id        Int       @id @default(autoincrement()) @map("id")
+  rule      String    @map("rule")
+  type      String    @map("type")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@unique(rule, name: "rule_config_rule_unique")
+  @@map("rule_configs")
 }
 
 enum TokenType {

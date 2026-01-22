@@ -3,6 +3,7 @@ import { Injectable, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from '@app/common/decorators/public-auth.decorator';
+import { lastValueFrom } from 'rxjs';
 
 /**
  * JWT认证守卫
@@ -18,7 +19,7 @@ export class AuthGuard extends PassportAuthGuard('jwt') {
    * @param context 执行上下文
    * @returns 是否允许请求通过
    */
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     // 可以在这里添加额外的自定义逻辑
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
@@ -28,8 +29,7 @@ export class AuthGuard extends PassportAuthGuard('jwt') {
     if(isPublic){
       return true;
     }
-    console.log('AuthGuard canActivate', context);
     // 调用Passport的JWT认证（会自动使用JwtStrategy）
-    return super.canActivate(context);
+    return await super.canActivate(context) as boolean ;
   }
 }

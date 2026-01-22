@@ -1,79 +1,86 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { MinioService } from '@core/minio/minio.service';
-import { File } from '@common/types/file.types';
-import { UserRepository } from './repositories/user.repository';
-import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index';
-import type { Prisma, User } from '@prisma/client';
-import { DEFAULT_SAFE_USER_SELECT,DEFAULT_USER_SELECT,DEFAULT_USER_WITH_ROLE } from '@common/prisma/composite.selects';
-import { DEFAULT_USER_WITH_ROLE_TYPE } from '@common/types/prisma.type'
-
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { MinioService } from '@core/minio/minio.service'
+import { File } from '@common/types/file.types'
+import { UserRepository } from './repositories/user.repository'
+import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index'
+import type { Prisma, User } from '@prisma/client'
+import * as all from '@app/common/prisma-types'
 
 @Injectable()
 export class UserService {
   constructor(
     private userRepository: UserRepository,
     private minioService: MinioService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {}
 
   /**
-   * 通过ID查找用户
+   * 通过ID查找用户安全字段信息
    * @param id 用户ID
    * @returns 用户对象
    * @throws NotFoundException 用户不存在
    */
-  async findById<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'>>(id: number, options?: T): 
-  Promise<User | null> {
-    const queryArgs:Prisma.UserFindUniqueArgs = {
-      where:{ id, deletedAt: null },
-      ...DEFAULT_USER_WITH_ROLE,
-      ...options,
-    }
-
-    const user = await this.userRepository.findById(queryArgs);
+  async findById(id: number,): Promise<all.SAFE_USER_TYPE | null> {
+    const user = await this.userRepository.findById(id)
     if (!user) {
-      throw new NotFoundException('用户不存在');
+      throw new NotFoundException('用户不存在')
     }
-    
-    return user;
-  }
 
+    return user
+  }
+  async findByIdWithRole(id: number,): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
+    const user = await this.userRepository.findByIdWithRole(id)
+
+    return user
+  }
+  async findByIdOptional(id: number,): Promise<all.SAFE_USER_TYPE | null> {
+    const user = await this.userRepository.findById(id)
+
+    return user
+  }
   /**
-   * 通过邮箱查找用户（可选）- 支持灵活查询配置
+   * 通过邮箱查找用户（可选）- 支持默认查询（包含角色默认信息）
    * @param email 用户邮箱
-   * @param options 查询选项，支持select和include
    * @returns 用户对象或null，包含默认的角色信息
    */
-  async findByEmailOptional<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'>>(email: string, options?: T): 
-  Promise<User | null> {
+  async findByEmail(email: string): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE> {
+    const user = await this.userRepository.findByEmail(email)
+    if (!user) {
+      throw new NotFoundException('用户不存在')
+    }
 
-    const where={ email, deletedAt: null };
+    return user
+  }
 
-    const user = await this.userRepository.findByEmail(where, options);
-    return user;
+  async findByEmailOptional(email: string): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
+    const user = await this.userRepository.findByEmail(email)
+
+    return user
   }
   /**
-   * 通过邮箱查找用户 - 支持灵活查询配置
+   * 通过邮箱查找用户（可选）- 支持用户完整-角色默认信息（用于登录验证）
    * @param email 用户邮箱
-   * @returns 用户对象
+   * @returns 用户对象或null，包含完整的角色信息
    */
-  async findByEmail<T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'>>(email: string, options?: T):
-  Promise<User> {
-    const where={ email, deletedAt: null };
-    const user = await this.userRepository.findByEmail(where, options);
-    if (!user) {
-      throw new NotFoundException('用户不存在');
-    }
-    return user;
+  async findByEmailFullForLogin(email:string): Promise<all.USER_FULL_ROLE_DEFAULT_TYPE | null>{
+    const user = await this.userRepository.findByEmailFullForLogin(email)
+
+    return user
   }
+
   /**
    * 创建新用户
    * @param createUserDto 用户数据
    * @returns 创建的用户
    */
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    return this.userRepository.create(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<all.SAFE_USER_TYPE> {
+    return this.userRepository.create(createUserDto)
   }
 
   /**
@@ -85,20 +92,25 @@ export class UserService {
    * @throws ForbiddenException 无权限
    * @throws BadRequestException 无效操作
    */
-  async update(id: number, updateUserDto: UpdateUserDto, currentUser: User): Promise<User> {
-    const user = await this.findById(id);
-    
-    // 权限检查：只能修改自己的资料，管理员可以修改任何用户
-    if (currentUser.id !== id && currentUser.roleId !== 1) {
-      throw new ForbiddenException('无权限修改此用户');
+  async update(id: number, updateUserDto: UpdateUserDto, currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE): Promise<all.SAFE_USER_TYPE> {
+    const user = await this.findById(id)
+    const updateData ={
+      avatarUrl:'',
+      userName:updateUserDto.userName,
     }
-    
-    // 防止普通用户修改自己的角色
-    if (currentUser.id === id && currentUser.roleId && updateUserDto.roleId) {
-      throw new BadRequestException('普通用户不能修改自己的角色');
+    // 检查用户是否存在
+    if (!user) {
+      throw new NotFoundException('用户不存在')
     }
-
-    return this.userRepository.update(id, updateUserDto);
+    // 权限检查：只能修改自己的资料
+    if (currentUser.id !== id) {
+      throw new ForbiddenException('无权限进行此操作')
+    }
+    // 检查是否尝试修改角色（非管理员不能修改角色）
+    if(updateUserDto.roleId && currentUser.role.name!=='ADMIN'){
+      throw new BadRequestException('无权限修改角色')
+    }
+    return this.userRepository.update(id, updateUserDto)
   }
 
   /**
@@ -107,21 +119,19 @@ export class UserService {
    * @param userProfileDto 个人资料数据
    * @returns 更新后的用户
    */
-  async updateProfile(id: number, userProfileDto: UserProfileDto): Promise<any> {
-    const user = await this.findById(id);
-    
+  async updateProfile(id: number, userProfileDto: UserProfileDto): Promise<all.SAFE_USER_TYPE> {
+    // const user = await this.findById(id)
+    const updateData ={
+      avatarUrl:'',
+      userName:userProfileDto.username,
+    }
     // 更新头像（如果有）
     if (userProfileDto.avatar) {
-      const avatarUrl = await this.uploadAvatar(userProfileDto.avatar, id.toString());
-      await this.userRepository.updateAvatar(id, avatarUrl);
+      const avatarUrl = await this.uploadAvatar(userProfileDto.avatar, id.toString())
+      updateData.avatarUrl = avatarUrl
     }
-    
-    // 更新用户名（如果有）
-    if (userProfileDto.username) {
-      return this.userRepository.update(id, { userName: userProfileDto.username });
-    }
-    
-    return user;
+
+    return this.userRepository.update(id, updateData)
   }
 
   /**
@@ -132,14 +142,14 @@ export class UserService {
    */
   private async uploadAvatar(file: File, userId: string): Promise<string> {
     // 生成唯一文件名
-    
+
     try {
       // 上传到MinIO
-      const fileUrl = await this.minioService.uploadFile( file, `user-avatars/${userId}`,{ userId });
-      
-      return fileUrl;
+      const fileUrl = await this.minioService.uploadFile(file, `user-avatars/${userId}`, { userId })
+
+      return fileUrl
     } catch (error) {
-      throw new BadRequestException('头像上传失败');
+      throw new BadRequestException('头像上传失败')
     }
   }
 
@@ -153,17 +163,11 @@ export class UserService {
    */
   async findAll(page: number, limit: number, currentUser: User, filters: any = {}) {
     // 非管理员只能看到自己的信息
-    if (currentUser.roleId) {
-      return {
-        data: [currentUser],
-        total: 1,
-        page: 1,
-        limit: 1,
-        totalPages: 1,
-      };
+    if (currentUser.roleId !=1) {
+      throw new ForbiddenException('无权限查看用户列表')
     }
-    
-    return this.userRepository.findAll(page, limit, filters);
+
+    return this.userRepository.findAll(page, limit, filters)
   }
 
   /**
@@ -172,18 +176,18 @@ export class UserService {
    * @param currentUser 当前用户
    * @throws ForbiddenException 无权限
    */
-  async delete(id: number, currentUser: User): Promise<void> {
-    // 只有管理员可以删除用户
-    if (currentUser.roleId !== 1) {
-      throw new ForbiddenException('无权限删除用户');
+  async delete(id: number, currentUser: User): Promise<boolean> {
+    const user = await this.findById(id)
+    if (!user) {
+      throw new NotFoundException('用户不存在')
     }
-    
-    // 不能删除自己
-    if (currentUser.id === id) {
-      throw new BadRequestException('不能删除自己的账号');
+    // 只有管理员或当事人可以删除用户
+    if (currentUser.roleId !== 1 || Number(user.id) == id) {
+      throw new ForbiddenException('无权限停用用户')
     }
-    
-    await this.userRepository.delete(id);
+
+    const deletedUserId = await this.userRepository.delete(id)
+    return deletedUserId === id
   }
 
   /**
@@ -192,9 +196,9 @@ export class UserService {
    * @returns 安全的用户对象
    */
   // TODO
-  getSafeUser(user: any): Partial<DEFAULT_USER_WITH_ROLE_TYPE> {
-    const { password, ...safeUser } = user;
-    return safeUser;
+  getSafeUser(user: any): Partial<all.USER_FULL_ROLE_DEFAULT_TYPE> {
+    const { password, ...safeUser } = user
+    return safeUser
   }
 
   /**
@@ -202,43 +206,35 @@ export class UserService {
    * @param userId 用户ID
    * @returns 更新后的用户对象
    */
-  async incrementFailedLoginAttempts(userId: number): Promise<any | null> {
-    const queryArgs:Prisma.UserFindUniqueArgs = {
-      where:{ id: userId, deletedAt: null },
-      ...DEFAULT_USER_SELECT
-    }
-    
-    const user = await this.userRepository.findById(queryArgs);
+  async incrementFailedLoginAttempts(userId: number): Promise<all.SAFE_USER_TYPE | null> {
+
+    const user = await this.userRepository.findById(userId)
     if (!user) {
-      throw new NotFoundException('用户不存在');
+      throw new NotFoundException('该用户不存在')
     }
-    await this.userRepository.increment(userId, 'failedLoginAttempts', 1);
     // 返回更新后的用户对象
-    return this.userRepository.findById(queryArgs);
+    return await this.userRepository.increment(userId)
   }
 
   /**
    * 锁定用户账户
    * @param userId 用户ID
    */
-  async lockUser(userId: number): Promise<void> {
-    const queryArgs:Prisma.UserFindUniqueArgs = {
-      where:{ id: userId, deletedAt: null },
-      ...DEFAULT_USER_SELECT
-    }
-    const user = await this.userRepository.findById(queryArgs);
+  async lockUser(userId: number): Promise<all.SAFE_USER_TYPE> {
+
+    const user = await this.userRepository.findById(userId)
     if (!user) {
-      throw new NotFoundException('用户不存在');
+      throw new NotFoundException('用户不存在')
     }
-    await this.userRepository.lockUser(userId);
+    return await this.userRepository.lockUser(userId)
   }
 
   /**
    * 重置用户失败登录尝试次数
    * @param userId 用户ID
    */
-  async resetFailedLoginAttempts(userId: number): Promise<void> {
-    await this.userRepository.resetFailedLoginAttempts(userId);
+  async resetFailedLoginAttempts(userId: number): Promise<boolean> {
+    return await this.userRepository.resetFailedLoginAttempts(userId)
   }
 
   /**
@@ -247,28 +243,24 @@ export class UserService {
    * @returns 如果账户被锁定返回true，否则返回false
    */
   async isAccountLocked(userId: number): Promise<boolean> {
-    const queryArgs:Prisma.UserFindUniqueArgs = {
-      where:{ id: userId, deletedAt: null },
-      ...DEFAULT_USER_SELECT
-    }
-    const user = await this.userRepository.findById(queryArgs);
+    const user = await this.userRepository.findById(userId)
     if (!user) {
-      throw new NotFoundException('用户不存在');
+      throw new NotFoundException('用户不存在')
     }
     if (user.deletedAt) {
-      throw new NotFoundException('用户已被禁用');
+      throw new NotFoundException('用户已被禁用')
     }
     // 如果没有锁定时间，说明没有被锁定
     if (!user.lockUntil) {
-      return false;
+      return false
     }
-    
+
     // 如果锁定时间已过期，自动解锁并返回false
     if (user.lockUntil < new Date()) {
-      await this.resetFailedLoginAttempts(userId);
-      return false;
+      await this.resetFailedLoginAttempts(userId)
+      return false
     }
-    
-    return true;
+
+    return true
   }
 }

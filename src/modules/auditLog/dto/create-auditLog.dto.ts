@@ -1,4 +1,4 @@
-// 导入Swagger的ApiProperty装饰器，用于定义API文档中的请求字段
+import { MethodEnum } from "@app/common/types/audit-log.type";
 import { ApiProperty } from '@nestjs/swagger';
 // 导入Zod库，用于定义数据验证模式
 import { z } from 'zod';
@@ -13,8 +13,8 @@ export const CreateAuditLogSchema = z.object({
   resource: z.string().min(1, '操作资源类型不能为空'),
   // 资源ID字段：必须是字符串且至少包含1个字符
   resourceId: z.string().optional(),
-  // HTTP方法字段：必须是字符串且至少包含1个字符
-  method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']),
+  // HTTP方法字段：必须是MethodEnum枚举的字符串键之一
+  method: z.enum(Object.keys(MethodEnum) as [string, ...string[]]),
   // 请求路径字段：必须是字符串且至少包含1个字符
   path: z.string().min(1, '请求路径不能为空'),
   // 是否成功字段：可选，必须是布尔值

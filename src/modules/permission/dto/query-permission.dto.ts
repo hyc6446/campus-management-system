@@ -1,37 +1,50 @@
-
-// 导入Swagger的ApiProperty装饰器，用于定义API文档中的请求字段
-import { ApiProperty } from '@nestjs/swagger';
+// import { IsOptional, IsInt,IsNumber, Min, Max, IsString, IsEnum, IsIn } from 'class-validator';
+// import { Type,Transform  } from 'class-transformer';
+// import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
+import { PERMISSION_ALLOWED_SORT_FIELDS } from '@app/common/prisma-types';
 // 导入Zod库，用于定义数据验证模式
 import { z } from 'zod';
 
 
 export const QueryPermissionSchema = z.object({
-  // 页码字段：必须是整数且大于等于1
-  page: z.number().int().min(1, '页码必须大于等于1'),
-  // 每页数量字段：必须是整数且大于等于1
-  pageSize: z.number().int().min(10, '每页数量必须大于等于10'),
+  page: z.coerce.number().int().min(1).default(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(10).optional(),
+  // 筛选参数,支持多字段筛选
+  id: z.coerce.number().int().optional(),
+  action: z.string().optional(),
+  subject: z.string().optional(),
+  roleId: z.coerce.number().int().optional(),
+  createdAt: z.union([z.string(), z.date()]).optional(),
+  // 排序方式
+  sortBy: z.string().optional().default('createdAt'),
+  order: z.string().optional().default('desc'),
+}).transform((data) => {
+  const originalSortFields = data.sortBy.split(',');
+  const validSortFields: string[] = [];
+  const originalSortOrders = data.order.split(',');
+  const validSortOrders: string[] = [];
+  originalSortFields.forEach((field, index) => {
+    const trimmedField = field.trim();
+    if (PERMISSION_ALLOWED_SORT_FIELDS.includes(trimmedField as any)) {
+      validSortFields.push(trimmedField);
+      const originalOrder = originalSortOrders[index]?.trim().toLowerCase() || 'desc';
+      const validOrder = ['asc', 'desc'].includes(originalOrder) ? originalOrder : 'desc';
+      validSortOrders.push(validOrder);
+    }
+  });
+  if (validSortFields.length === 0) {
+    validSortFields.push('createdAt');
+    validSortOrders.push('desc');
+  }
+  return {
+    ...data,
+    sortBy: validSortFields.join(','),
+    order: validSortOrders.join(',')
+  }
 });
 
 export type QueryPermissionDto = z.infer<typeof QueryPermissionSchema>;
 
 export class QueryPermissionDtoSwagger {
-  // 页码字段的Swagger文档配置
-  @ApiProperty({
-    example: 1,                    // 文档中显示的示例值
-    description: '页码',            // 文档中显示的字段描述
-    type: Number,                  // 字段类型
-    required: true                 // 是否为必填字段
-  })
-  page: number = 1;
-
-  // 每页数量字段的Swagger文档配置
-  @ApiProperty({
-    example: 10,                   // 文档中显示的示例值
-    description: '每页数量',        // 文档中显示的字段描述
-    type: Number,                  // 字段类型
-    required: true                 // 是否为必填字段
-  })
-  pageSize: number = 10;
-  
 }
 

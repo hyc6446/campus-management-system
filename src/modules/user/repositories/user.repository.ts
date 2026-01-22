@@ -1,89 +1,85 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@core/prisma/prisma.service';
-import { UpdateUserDto } from '../dto/index';
-import type { Prisma, User } from '@prisma/client';
-import { DEFAULT_USER_AND_ROLE_FULL, DEFAULT_USER_SELECT, DEFAULT_USER_WITH_ROLE } from '@common/prisma/composite.selects';
+import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { PrismaService } from '@core/prisma/prisma.service'
+import { CreateUserDto, UpdateUserDto } from '../dto/index'
+import type { Prisma, User } from '@prisma/client'
 
+import * as all from '@app/common/prisma-types';
 @Injectable()
 export class UserRepository {
-  constructor(
-    private prisma: PrismaService,
-    private configService: ConfigService,
-  ) {}
+  constructor(private prisma: PrismaService, private configService: ConfigService) {}
 
   /**
-   * 通过ID查找用户
+   * 通过ID查找用户 - 支持完整角色信息
    * @param id 用户ID
    * @returns 用户对象或null
    */
-  async findById<T extends Prisma.UserFindUniqueArgs>(queryArgs:T): 
-  Promise<Prisma.UserGetPayload<T> | null> {
-    const userData = await this.prisma.user.findUnique(queryArgs);
-    if (!userData) {
-      return null;
-    }
-    return userData as Prisma.UserGetPayload<T>;
+  async findById(id: number): Promise<all.SAFE_USER_TYPE | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+      select: {
+        ...all.SAFE_USER_FIELDS,
+      },
+    })
+ 
+    return user 
+  }
+  async findByIdWithRole(id: number): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+      select: {
+        ...all.SAFE_USER_FIELDS,
+        role: {
+          select: all.DEFAULT_ROLE_FIELDS,
+        },
+      },
+    })
+ 
+    return user 
   }
 
   /**
-   * 通过邮箱查找用户 - 支持灵活查询配置
-   * @param email 用户邮箱
-   * @param options 查询选项（Prisma原生格式，支持select）
+   * 通过邮箱查找用户安全字段信息 - 支持默认查询（包含角色默认信息）
+   * @param email 邮箱地址
    * @returns 用户对象或null
    */
-  // async findByEmail(email:string): Promise<User | null> {
-  //   const queryArgs = {
-  //     where:{ email, deletedAt: null },
-  //     ...DEFAULT_USER_AND_ROLE_FULL,
-  //   }
-
-  //   const userData = await this.prisma.user.findUnique(queryArgs);
-  //   return userData;
-  // }
-/**
-   * 通过唯一条件查找用户 - 支持灵活查询配置
-   * @param where 唯一查询条件
-   * @param options 查询选项（Prisma原生格式，支持select/include）
-   * @returns 用户对象或null
-   */
-  /**
-   * 通过唯一条件查找用户 - 支持灵活查询配置
-   * @param where 唯一查询条件
-   * @param options 查询选项（Prisma原生格式，支持select/include）
-   * @returns 用户对象或null，根据查询选项返回相应的字段和关联数据
-   */
-  async findUnique<K extends Prisma.UserWhereUniqueInput, T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'> = typeof DEFAULT_USER_AND_ROLE_FULL>(
-    where: K,
-    options?: T
-  ): Promise<Prisma.UserGetPayload<{ where: K } & T> | null> {
-    const queryArgs = {
-      where,
-      ...(options || DEFAULT_USER_AND_ROLE_FULL),
-    } as { where: K } & T;
-    
-    const userData = await this.prisma.user.findUnique(queryArgs);
-    return userData as Prisma.UserGetPayload<{ where: K } & T> | null; 
+  async findByEmail(email: string): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { email, deletedAt: null },
+      select: {
+        ...all.SAFE_USER_FIELDS,
+        role: {
+          select: all.DEFAULT_ROLE_FIELDS,
+        },
+      },
+    })
+    return user
   }
 
   /**
-   * 通过邮箱查找用户 - 支持灵活查询配置
-   * @param where 唯一查询条件
-   * @param options 查询选项（Prisma原生格式，支持select）
+   * 通过邮箱查找用户全量信息 - 支持登录查询（包含默认角色信息）
+   * @param email 邮箱地址
    * @returns 用户对象或null
    */
-  async findByEmail<K extends Prisma.UserWhereUniqueInput, T extends Omit<Partial<Prisma.UserFindUniqueArgs>, 'where'> = typeof DEFAULT_USER_AND_ROLE_FULL>(
-    where: K,
-    options?: T
-  ): Promise<Prisma.UserGetPayload<{ where: K } & T> | null>  {
-    return this.findUnique(where, options);
+  async findByEmailFullForLogin(email: string): Promise<all.USER_FULL_ROLE_DEFAULT_TYPE | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { email, deletedAt: null },
+      select: {
+        ...all.FULL_USER_FIELDS,
+        role: {
+          select: all.DEFAULT_ROLE_FIELDS,
+        },
+      },
+    })
+    return user
   }
+
   /**
    * 创建新用户
    * @param userData 用户数据
    * @returns 创建的用户
    */
-  async create(userData: Partial<User>): Promise<User> {
+  async create(userData: Partial<User>): Promise<all.SAFE_USER_TYPE> {
     const createdUser = await this.prisma.user.create({
       data: {
         email: userData.email as string,
@@ -94,17 +90,15 @@ export class UserRepository {
         roleId: userData.roleId as number,
         deletedAt: userData.deletedAt as Date | null,
       },
-      include: { 
+      select: {
+        ...all.SAFE_USER_FIELDS,
         role: {
-          select:{
-            id:true,
-            name:true,
-          }
-        } 
+          select: all.DEFAULT_ROLE_FIELDS,
+        },
       },
-    });
+    })
 
-    return createdUser;
+    return createdUser
   }
 
   /**
@@ -113,46 +107,39 @@ export class UserRepository {
    * @param updateData 更新数据
    * @returns 更新后的用户
    */
-  async update(id: number, updateData: UpdateUserDto): Promise<User> {
-    let updatedUser;
-      updatedUser = await this.prisma.user.update({
-        where: { id },
-        data: updateData,
-        include: { 
-          role: {
-            select:{
-              id:true,
-              name:true,
-            }
-          } 
+  async update(id: number, updateData: UpdateUserDto): Promise<all.SAFE_USER_TYPE> {
+    let updatedUser
+    updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: updateData,
+      include: {
+        role: {
+          select: all.DEFAULT_ROLE_FIELDS,
         },
-      });
+      },
+    })
 
-    
-    return updatedUser;
+    return updatedUser
   }
 
   /**
-   * 更新用户头像
+   * 更新用户信息，包含用户名和头像URL
    * @param id 用户ID
-   * @param avatarUrl 头像URL
+   * @param updateData 更新数据,包含avatarUrl和userName
    * @returns 更新后的用户
    */
-  async updateAvatar(id: number, avatarUrl: string): Promise<User> {
+  async updateProfile(id: number, updateData: {avatarUrl?:string,userName?:string}): Promise<all.SAFE_USER_TYPE> {
     const updatedUser = await this.prisma.user.update({
       where: { id },
-      data: { avatarUrl },
-      include: { 
+      data: updateData,
+      include: {
         role: {
-          select:{
-            id:true,
-            name:true,
-          }
-        } 
+          select: all.DEFAULT_ROLE_FIELDS,
+        },
       },
-    });
+    })
 
-    return updatedUser;
+    return updatedUser
   }
 
   /**
@@ -167,26 +154,26 @@ export class UserRepository {
       await this.prisma.token.deleteMany({
         where: {
           userId,
-          type: 'REFRESH'
-        }
-      });
-      return;
+          type: 'REFRESH',
+        },
+      })
+      return
     }
-    
+
     // 生成一个合理的过期时间，例如7天后
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 7)
+
     // 删除现有刷新令牌并创建新的 - 使用事务
-    await this.prisma.transaction(async (prisma) => {
+    await this.prisma.transaction(async prisma => {
       // 先删除用户现有的刷新令牌
       await prisma.token.deleteMany({
         where: {
           userId,
-          type: 'REFRESH'
-        }
-      });
-      
+          type: 'REFRESH',
+        },
+      })
+
       // 创建新的刷新令牌
       await prisma.token.create({
         data: {
@@ -194,10 +181,10 @@ export class UserRepository {
           token: refreshToken,
           type: 'REFRESH',
           expiresAt,
-          deletedAt: null
-        }
-      });
-    });
+          deletedAt: null,
+        },
+      })
+    })
   }
 
   /**
@@ -208,35 +195,32 @@ export class UserRepository {
    * @returns 用户列表和总数
    */
   async findAll(page: number = 1, limit: number = 10, filters: any = {}) {
-    const skip = (page - 1) * limit;
-    
+    const skip = (page - 1) * limit
+
     // 如果filters中包含id字段且为字符串类型，转换为数字
     if (filters.id && typeof filters.id === 'string') {
-      filters.id = parseInt(filters.id, 10);
+      filters.id = parseInt(filters.id, 10)
     }
-    
+
     const [usersData, total] = await Promise.all([
       this.prisma.user.findMany({
         where: {
           ...filters,
         },
-        include: { 
+        include: {
           role: {
-            select:{
-              id:true,
-              name:true,
-            }
-          } 
+            select: all.DEFAULT_ROLE_FIELDS,
+          },
         },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.user.count({ where: filters }),
-    ]);
+    ])
 
     // 将用户数据数组转换为User实体类实例数组
-    const users = usersData.map(userData => userData);
+    const users = usersData.map(userData => userData)
 
     return {
       data: users,
@@ -244,15 +228,17 @@ export class UserRepository {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
-    };
+    }
   }
 
   /**
    * 删除用户
    * @param id 用户ID
    */
-  async delete(id: number): Promise<void> {
-    await this.prisma.user.update({ where: { id }, data: { deletedAt: new Date() } });
+  async delete(id: number): Promise<number> {
+    const deletedUser = await this.prisma.user.update({ where: { id }, data: { deletedAt: new Date() } })
+    
+    return deletedUser.id
   }
 
   /**
@@ -260,39 +246,40 @@ export class UserRepository {
    * @param id 用户ID
    * @param amount 增加数量
    */
-  async increment(id: number, field: string, amount: number = 1): Promise<void> {
-    await this.prisma.user.update({
+  async increment(id: number): Promise<all.SAFE_USER_TYPE> {
+    return await this.prisma.user.update({
       where: { id },
       data: {
-        [field]: { increment: amount },
+        failedLoginAttempts: { increment: 1 },
       },
-    });
+      select: all.SAFE_USER_FIELDS,
+    })
   }
 
   /**
    * 锁定用户
    * @param id 用户ID
    */
-  async lockUser(id: number): Promise<void> {
-    await this.prisma.user.update({
+  async lockUser(id: number): Promise<all.SAFE_USER_TYPE> {
+    const lockUntil = new Date(Date.now() + this.configService.get('auth.lockoutDuration'))
+    return await this.prisma.user.update({
       where: { id },
-      data: {
-        lockUntil: new Date(Date.now() + this.configService.get('auth.lockoutDuration')),
-      },
-    });
+      data: {lockUntil,},
+    })
   }
 
   /**
    * 重置用户失败登录尝试次数
    * @param id 用户ID
    */
-  async resetFailedLoginAttempts(id: number): Promise<void> {
-    await this.prisma.user.update({
+  async resetFailedLoginAttempts(id: number): Promise<boolean> {
+    const resetResult = await this.prisma.user.update({
       where: { id },
       data: {
         failedLoginAttempts: 0,
         lockUntil: null,
       },
-    });
+    })
+    return resetResult ? true : false
   }
 }

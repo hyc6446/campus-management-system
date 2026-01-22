@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { AUDIT_LOG_METADATA_KEY, AuditLogOptions } from '@common/decorators/audit-log.decorator'
 import { AuditLogService } from '@modules/auditLog/auditLog.service'
-import { AuditLogData } from '@common/types/audit-log.types'
+import { AuditLogData } from '@app/common/types/audit-log.type'
 import { UserService } from '@modules/user/user.service'
 /**
  * 审计日志拦截器

@@ -1,38 +1,35 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
-import { ROLES_KEY } from '@common/decorators/roles.decorator';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import { ROLES_KEY } from '@common/decorators/roles.decorator'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
-    ]);
-    
-    if (!requiredRoles || requiredRoles.length === 0) {
-      return true;
+    ])
+    if (!requiredRoles || requiredRoles.length === 0) return true
+
+    const request = context.switchToHttp().getRequest()
+    const user = request.user
+    if (!user) {
+      throw new ForbiddenException('用户未认证')
     }
-    
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
-    
-    if (!user || !user.role) {
-      throw new ForbiddenException('用户未认证或角色信息缺失');
+
+    if (!user.role) {
+      throw new ForbiddenException('用户角色信息缺失')
     }
-    
+
     // 检查用户角色是否在允许的角色列表中
-    const hasRole = requiredRoles.some(role => role === user.role);
-    
+    const hasRole = requiredRoles.some(role => role === user.role.name)
+
     if (!hasRole) {
-      throw new ForbiddenException('没有足够的角色权限');
+      throw new ForbiddenException('没有足够的角色权限')
     }
-    
-    return true;
+
+    return true
   }
 }

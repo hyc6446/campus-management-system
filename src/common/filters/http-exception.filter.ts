@@ -26,7 +26,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // 处理不同类型的异常
     if (exception instanceof HttpException) {
       const responseObj = exception.getResponse() as any;
-      
       status = exception.getStatus();
       errorCode = responseObj.errorCode || 'HTTP_EXCEPTION';
       message = responseObj.message || exception.message;

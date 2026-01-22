@@ -8,7 +8,6 @@ export const CreateUserSchema = z.object({
   roleId:  z.coerce.number().int().min(1, '角色ID不能为空且必须是有效的角色ID'),
   // classIds: z.array(z.coerce.number()).optional(),
   // childrenIds: z.array(z.coerce.number()).optional(),
-  isActive: z.boolean().default(true),
 });
 
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;

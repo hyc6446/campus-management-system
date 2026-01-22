@@ -1,31 +1,34 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UsePipes,
-  Param,
-  Get,
-  UseGuards,
-  Query,
-  Put,
-  HttpStatus,
-} from '@nestjs/common'
+import { AuthGuard } from '@common/guards/auth.guard'
 import { ZodValidationPipe } from '@common/pipes/validation.pipe'
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger'
 import { CurrentUser } from '@common/decorators/current-user.decorator'
-import { User } from '@modules/user/entities/user.entity'
+import { RoleService } from './role.service'
+import { Role } from './entities/role.entity'
+import * as all from '@app/common/prisma-types'
 import {
   UpdateRoleDtoSwagger,
   CreateRoleDtoSwagger,
-  QueryRoleSchema,  
+  QueryRoleSchema,
   UpdateRoleSchema,
   CreateRoleSchema,
   UpdateRoleDto,
   CreateRoleDto,
+  QueryRoleDto,
 } from './dto/index'
-import { RoleService } from './role.service'
-import { Role } from './entities/role.entity'
-import { AuthGuard } from '@common/guards/auth.guard'
+import {
+  Controller,
+  Post,
+  Param,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Query,
+  UsePipes,
+  UseGuards,
+  HttpStatus,
+  ParseIntPipe,
+} from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiParam, ApiQuery} from '@nestjs/swagger'
 
 @ApiTags('角色')
 @Controller('role')
@@ -35,26 +38,28 @@ export class RoleController {
   constructor(private roleService: RoleService) {}
 
   @ApiOperation({ summary: '查询角色' })
-  @ApiBearerAuth()
   @ApiQuery({ name: 'page', required: false, type: Number, description: '页码', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: '每页数量', example: 10 })
-  @ApiResponse({ status: HttpStatus.OK, description: '成功获取用户列表', type: Role, isArray: true })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: '每页数量(最大100)', example: 10, maximum: 100 })
+  @ApiQuery({ name: 'id', required: false, type: Number, description: '角色ID', example: 1 })
+  @ApiQuery({ name: 'name', required: false, type: String, description: '角色名称', example: '' })
+  @ApiQuery({ name: 'createdAt', required: false, type: String, description: '创建时间', example: '' })
+  @ApiQuery({ name: 'sortBy', required: false, type: String, description: '排序字段, 多个字段用逗号分隔', example: 'createdAt' })
+  @ApiQuery({ name: 'order', required: false, type: String, description: '排序方式, 多个字段用逗号分隔', example: 'desc' })
+  @ApiResponse({ status: HttpStatus.OK, description: '成功获取角色列表', type: Role, isArray: true, })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的查询参数' })
   @Get('query')
-  @UsePipes(new ZodValidationPipe(QueryRoleSchema))
-  async findAll(    
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-    @CurrentUser() currentUser: User) {
-    return await this.roleService.findAll(page, limit, currentUser)
+  async findAll(
+    @Query(new ZodValidationPipe(QueryRoleSchema)) query: QueryRoleDto,
+    @CurrentUser() currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE) {
+    return await this.roleService.findAll(query, currentUser)
   }
 
   @ApiOperation({ summary: '创建角色' })
-  @ApiBearerAuth()
   @ApiBody({ type: CreateRoleDtoSwagger })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '角色创建成功', type: Role })
+  @ApiResponse({ status: HttpStatus.OK, description: '角色创建成功', type: Role })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: '角色名称已存在' })
   @Post()
   @UsePipes(new ZodValidationPipe(CreateRoleSchema))
   async create(@Body() createRoleDto: CreateRoleDto) {
@@ -62,38 +67,39 @@ export class RoleController {
   }
 
   @ApiOperation({ summary: '获取指定角色信息' })
-  @ApiBearerAuth()
   @ApiParam({ name: 'id', description: '角色ID', type: Number })
   @ApiResponse({ status: HttpStatus.OK, description: '成功获取角色信息', type: Role })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在' })
   @Get(':id')
-  async findOne(@Param('id') id: number) {
-    return await this.roleService.findById(id)
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.roleService.findByIdWithFull(id)
   }
 
   @ApiOperation({ summary: '更新角色' })
-  @ApiBearerAuth()
   @ApiParam({ name: 'id', description: '角色ID', type: Number })
   @ApiBody({ type: UpdateRoleDtoSwagger })
-  @ApiResponse({ status: HttpStatus.OK, description: '用户更新成功', type: User })
+  @ApiResponse({ status: HttpStatus.OK, description: '角色更新成功', type: Role })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在' })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: '角色名称已存在' })
   @Put(':id')
-  @UsePipes(new ZodValidationPipe(UpdateRoleSchema))
-  async update( @Param('id') id: number, @Body() updateRoleDto: UpdateRoleDto ) {
-    return await this.roleService.update(id, updateRoleDto)
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ZodValidationPipe(UpdateRoleSchema)) updateRoleDto: UpdateRoleDto,
+    @CurrentUser() currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE
+  ) {
+    return await this.roleService.update(id, updateRoleDto, currentUser)
   }
 
   @ApiOperation({ summary: '删除角色' })
-  @ApiBearerAuth()
   @ApiParam({ name: 'id', description: '角色ID', type: Number })
+  @ApiResponse({ status: HttpStatus.OK, description: '角色删除成功' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: '角色删除成功' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在' })
-  @Post('delete')
-  async delete(@Param('id') id: number ) {
-    return this.roleService.delete(id)
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE) {
+    return this.roleService.delete(id, currentUser)
   }
 }

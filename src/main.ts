@@ -3,10 +3,10 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@core/logger/logger.service';
 import { setupSwagger } from '@core/swagger/swagger-config';
-// import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
 import { PrismaService } from '@core/prisma/prisma.service';
+process.env.TZ = 'Asia/Shanghai';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -28,9 +28,6 @@ async function bootstrap() {
 
   // 全局拦截器
   app.useGlobalInterceptors(new TransformInterceptor());
-
-  // 移除全局验证管道，项目使用的是局部Zod验证管道
-  // 全局验证管道与Zod验证管道冲突，会导致重复验证
 
   // Swagger文档
   setupSwagger(app, configService);

@@ -40,7 +40,7 @@ import {
   CreateUserDtoSwagger,
   UpdateUserDtoSwagger,
 } from './dto/index'
-import { FindUserById,DEFAULT_USER_WITH_ROLE_TYPE } from '@common/types/prisma.type'
+import * as all from '@app/common/prisma-types'
 
 @ApiTags('用户管理')
 @ApiBearerAuth()
@@ -49,11 +49,10 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: '获取当前登录用户信息' })
-  // @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard)
   @ApiResponse({ status: 200, description: '成功获取用户信息', type: User })
   @Get('profile')
-  async getProfile(@CurrentUser() user: DEFAULT_USER_WITH_ROLE_TYPE) {
+  async getProfile(@CurrentUser() user: User) {
     return this.userService.getSafeUser(user)
   }
 
@@ -63,13 +62,13 @@ export class UserController {
   @ApiResponse({ status: 200, description: '资料更新成功', type: User })
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))
-  @AuditLog({
-    action: 'update',
-    resource: 'User',
-    resourceIdPath: '0.id',
-    logParams: true,
-    logResult: true,
-  })
+  // @AuditLog({
+  //   action: 'update',
+  //   resource: 'User',
+  //   resourceIdPath: '0.id',
+  //   logParams: true,
+  //   logResult: true,
+  // })
   @Put('profile')
   updateProfile(
     @CurrentUser() user: User,
@@ -111,7 +110,7 @@ export class UserController {
   @ApiResponse({ status: 403, description: '无权限' })
   @UseGuards(AuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: number): Promise<FindUserById | null> {
+  async findOne(@Param('id') id: number): Promise<any> {
     const user = await this.userService.findById(id)
     return user
   }
