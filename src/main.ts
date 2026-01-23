@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@core/logger/logger.service';
 import { setupSwagger } from '@core/swagger/swagger-config';
+import { AppModule } from './app.module';
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
 import { PrismaService } from '@core/prisma/prisma.service';
@@ -36,11 +36,7 @@ async function bootstrap() {
   prismaService.enableShutdownHooks(app);
 
   // CORS配置
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
+  app.enableCors();
 
   const port = configService.get('app.port');
   const host = configService.get('app.host');

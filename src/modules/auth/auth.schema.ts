@@ -1,4 +1,4 @@
-import { LoginSchema, RegisterSchema, RefreshTokenSchema } from '../dto/index';
+import { LoginSchema, RegisterSchema, RefreshTokenSchema } from './dto/index';
 
 /**
  * 验证登录请求数据

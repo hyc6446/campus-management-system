@@ -2,8 +2,8 @@ import { AuthGuard } from '@common/guards/auth.guard'
 import { ZodValidationPipe } from '@common/pipes/validation.pipe'
 import { CurrentUser } from '@common/decorators/current-user.decorator'
 import { RoleService } from './role.service'
-import { Role } from './entities/role.entity'
-import * as all from '@app/common/prisma-types'
+import { Role } from './role.entity'
+import * as pt from '@app/common/prisma-types'
 import {
   UpdateRoleDtoSwagger,
   CreateRoleDtoSwagger,
@@ -50,7 +50,7 @@ export class RoleController {
   @Get('query')
   async findAll(
     @Query(new ZodValidationPipe(QueryRoleSchema)) query: QueryRoleDto,
-    @CurrentUser() currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE) {
+    @CurrentUser() currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE) {
     return await this.roleService.findAll(query, currentUser)
   }
 
@@ -87,7 +87,7 @@ export class RoleController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body(new ZodValidationPipe(UpdateRoleSchema)) updateRoleDto: UpdateRoleDto,
-    @CurrentUser() currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE
+    @CurrentUser() currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE
   ) {
     return await this.roleService.update(id, updateRoleDto, currentUser)
   }
@@ -99,7 +99,7 @@ export class RoleController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在' })
   @Delete(':id')
-  async delete(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE) {
+  async delete(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE) {
     return this.roleService.delete(id, currentUser)
   }
 }

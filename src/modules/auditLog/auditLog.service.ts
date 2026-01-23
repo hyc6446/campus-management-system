@@ -4,7 +4,7 @@ import { AuditLog } from './entities/auditLog.entity';
 import { CreateAuditLogDto, UpdateAuditLogDto } from './dto/index';
 import { CaslService } from '@core/casl/casl.service';
 import { Action, Subjects, SubjectsEnum } from '@core/casl/casl.types';
-import { User } from '@modules/user/entities/user.entity';
+import { User } from '@modules/user/user.entity';
 
 
 @Injectable()

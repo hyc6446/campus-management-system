@@ -6,7 +6,7 @@ import { TokenType } from '@prisma/client';
 import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { TokenPayload } from './jwt.strategy';
-import * as all from '@app/common/prisma-types'
+import * as pt from '@app/common/prisma-types'
 
 /**
  * 认证服务类
@@ -87,7 +87,7 @@ export class AuthService {
    * @param password 明文密码
    * @returns 验证成功返回用户对象，失败返回null
    */
-  async validateUser(email: string, password: string):  Promise<all.USER_FULL_ROLE_DEFAULT_TYPE | null> {
+  async validateUser(email: string, password: string):  Promise<pt.USER_FULL_ROLE_DEFAULT_TYPE | null> {
     // 根据邮箱查找用户
     const user = await this.userService.findByEmailFullForLogin(email);
     // 检查用户是否存在且状态为激活
@@ -127,6 +127,7 @@ export class AuthService {
     if (user.failedLoginAttempts > 0 || user.lockUntil) {
       await this.userService.resetFailedLoginAttempts(user.id);
     }
+    // console.log("AuthService.validateUser",email,password)
     
     // 验证成功，返回用户对象
     return user;

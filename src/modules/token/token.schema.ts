@@ -1,6 +1,6 @@
 
 // 从DTO模块导入预定义的Zod验证模式
-import { CreateTokenSchema, UpdateTokenSchema, ValidateTokenSchema } from '../dto/index';
+import { CreateTokenSchema, UpdateTokenSchema, ValidateTokenSchema } from './dto/index';
 
 export const validateCreateToken = (data: unknown) => {
   return CreateTokenSchema.parse(data);

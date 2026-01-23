@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@core/prisma/prisma.service';
 import { TokenType } from '@prisma/client';
-import { Token } from '../entities/token.entity';
+import { Token } from './token.entity';
 // import { TokenSelect, TokenWithFields } from '@app/common/types/entity/token.type';
 
 @Injectable()

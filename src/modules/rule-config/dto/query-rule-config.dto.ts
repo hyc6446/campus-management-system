@@ -1,77 +1,20 @@
-import { ApiProperty } from '@nestjs/swagger'
 import { z } from 'zod'
+import { createZodDto } from 'nestjs-zod'
+import { paginationSchema, sortingSchema } from '@app/common/validators/zod-validators'
 
 export const QueryRuleConfigSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(10).optional(),
-  // 筛选参数,支持多字段筛选
-  id: z.coerce.number().int().optional(),
-  rule: z.string('规则名称不能为空'),
-  type: z.enum(['action', 'subject'], '无效的规则类型').default('action'),
-  createdAt: z.union([z.string(), z.date()]).optional(),
-  // 排序方式
-  sortBy: z.string().optional().default('createdAt'),
-  order: z.string().optional().default('desc'),
+  ...paginationSchema.shape,
+  id: z.coerce.number().int({ message: '规则ID必须为整数' }).optional().describe('规则ID'),
+  rule: z.string({ message: '规则名称不能为空' }).optional().describe('规则名称'),
+  type: z
+    .enum(['action', 'subject'], { message: '无效的规则类型' })
+    .default('action')
+    .transform((val) => val?.trim().toLowerCase() || 'action')
+    .optional()
+    .describe('规则类型,范围:action,subject'),
+  createdAt: z.string({ message: '创建时间必须为字符串或日期' }).transform((val) => new Date(val)).optional().describe('创建时间'),
+  ...sortingSchema.shape,
 })
 
-export type QueryRuleConfigDto = z.infer<typeof QueryRuleConfigSchema>
-
-export class QueryRuleConfigDtoSwagger {
-  @ApiProperty({
-    example: 1, // 文档中显示的示例值
-    description: '页码', // 文档中显示的字段描述
-    type: Number, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  page? = 1
-  @ApiProperty({
-    example: 10, // 文档中显示的示例值
-    description: '每页数量', // 文档中显示的字段描述
-    type: Number, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  limit? = 10
-  @ApiProperty({
-    example: 'createdAt', // 文档中显示的示例值
-    description: '排序字段', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  sortBy? = 'createdAt'
-  @ApiProperty({
-    example: 'desc', // 文档中显示的示例值
-    description: '排序方向', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  order? = 'desc'
-  @ApiProperty({
-    example: 1, // 文档中显示的示例值
-    description: '规则配置ID', // 文档中显示的字段描述
-    type: Number, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  id? = 1
-  @ApiProperty({
-    example: 'READ', // 文档中显示的示例值
-    description: '规则名称', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  rule? = 'READ'
-  @ApiProperty({
-    example: 'action', // 文档中显示的示例值
-    description: '规则类型', // 文档中显示的字段描述
-    enum: ['action', 'subject'], // 枚举值
-    type: String, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  type? = 'action'
-  @ApiProperty({
-    example: '2023-01-01', // 文档中显示的示例值
-    description: '创建时间', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  createdAt? = '2023-01-01'
-}
+// 使用 createZodDto 创建 DTO 类
+export class QueryRuleConfigDto extends createZodDto(QueryRuleConfigSchema) {}

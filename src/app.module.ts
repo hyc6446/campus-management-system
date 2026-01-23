@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core'
+import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD, APP_PIPE } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { ZodValidationPipe, ZodSerializerInterceptor } from 'nestjs-zod'
 // 导入模块
 import { AuthCoreModule } from '@core/auth/auth.module'
 import { CaslModule } from '@core/casl/casl.module'
@@ -13,6 +14,8 @@ import { CaslGuard } from '@core/casl/casl.guard'
 import { AuthModule } from '@modules/auth/auth.module'
 import { UserModule } from '@modules/user/user.module'
 import { AuditLogModule } from '@modules/auditLog/auditLog.module'
+import { RuleConfigModule } from '@modules/rule-config/rule-config.module'
+
 // 导入模块
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter'
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor'
@@ -26,7 +29,6 @@ import { AppService } from './app.service'
 
 // 导入配置验证函数
 import { validateConfig } from '@config/configuration'
-import { RuleConfigModule } from './modules/rule-config/rule-config.module';
 import authConfig from '@config/auth.config'
 import appConfig from '@config/app.config'
 import databaseConfig from '@config/database.config'
@@ -78,39 +80,17 @@ import loggerConfig from '@config/logger.config'
   controllers: [AppController],
   providers: [
     AppService,
-    // 全局守卫
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard, // 全局限流
-    },
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard, // 认证守卫
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard, // 角色守卫
-    },
-    {
-      provide: APP_GUARD,
-      useClass: CaslGuard, // CASL守卫
-    },
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: AuditLogInterceptor,
-    },
+    // 全局限流
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: CaslGuard },
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+    { provide: APP_PIPE, useClass: ZodValidationPipe },
+    { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
   ],
 })
 export class AppModule {

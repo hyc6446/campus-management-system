@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { Injectable,HttpStatus } from '@nestjs/common';
-import { RoleRepository } from './repositories/role.repository';
-import { Role } from './entities/role.entity';
+import { RoleRepository } from './role.repository';
+import { Role } from './role.entity';
 import { CreateRoleDto, QueryRoleDto, UpdateRoleDto } from './dto/index';
-import * as all from '@app/common/prisma-types';
+import * as pt from '@app/common/prisma-types';
 import { AppException } from '@app/common/exceptions/app.exception';
 
 @Injectable()
@@ -26,36 +26,36 @@ export class RoleService {
    * @returns 用户对象
    * @throws NotFoundException 用户不存在
    */
-  async findById(id: number): Promise<all.DEFAULT_ROLE_TYPE> {
+  async findById(id: number): Promise<pt.DEFAULT_ROLE_TYPE> {
     const role = await this.roleRepository.findById(id);
     if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} )
 
     return role;
   }
 
-  async findByIdWithSafe(id: number): Promise<all.SAFE_ROLE_TYPE> {
+  async findByIdWithSafe(id: number): Promise<pt.SAFE_ROLE_TYPE> {
     const role = await this.roleRepository.findByIdWithSafe(id);
     if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} );
 
     return role;
   }
 
-  async findByIdWithFull(id:number): Promise<all.FULL_ROLE_TYPE>{
+  async findByIdWithFull(id:number): Promise<pt.FULL_ROLE_TYPE>{
     const role = await this.roleRepository.findByIdWithFull(id);
     if(!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} );
 
     return role
   }
 
-  async findByIdOptional(id: number): Promise<all.DEFAULT_ROLE_TYPE | null> {
+  async findByIdOptional(id: number): Promise<pt.DEFAULT_ROLE_TYPE | null> {
     return await this.roleRepository.findById(id);
   }
 
-  async findByIdWithSafeOptional(id: number): Promise<all.SAFE_ROLE_TYPE | null> {
+  async findByIdWithSafeOptional(id: number): Promise<pt.SAFE_ROLE_TYPE | null> {
     return await this.roleRepository.findByIdWithSafe(id);
   }
 
-  async findByIdWithFullOptional(id: number): Promise<all.FULL_ROLE_TYPE | null> {
+  async findByIdWithFullOptional(id: number): Promise<pt.FULL_ROLE_TYPE | null> {
     return await this.roleRepository.findByIdWithFull(id);
   }
 
@@ -72,36 +72,36 @@ export class RoleService {
    * @param name 角色名称
    * @returns 角色对象或null
    */
-  async findByName(name: string): Promise<all.DEFAULT_ROLE_TYPE> {
+  async findByName(name: string): Promise<pt.DEFAULT_ROLE_TYPE> {
     const role = await this.roleRepository.findByName(name);
     if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} )
 
     return role;
   }
 
-  async findByNameWithSafe(name: string): Promise<all.SAFE_ROLE_TYPE> {
+  async findByNameWithSafe(name: string): Promise<pt.SAFE_ROLE_TYPE> {
     const role = await this.roleRepository.findByNameWithSafe(name);
     if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} );
 
     return role;
   }
 
-  async findByNameWithFull(name: string): Promise<all.FULL_ROLE_TYPE> {
+  async findByNameWithFull(name: string): Promise<pt.FULL_ROLE_TYPE> {
     const role = await this.roleRepository.findByNameWithFull(name);
     if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} );
 
     return role;
   }
 
-  async findByNameOptional(name: string): Promise<all.DEFAULT_ROLE_TYPE | null> {
+  async findByNameOptional(name: string): Promise<pt.DEFAULT_ROLE_TYPE | null> {
     return await this.roleRepository.findByName(name);
   }
 
-  async findByNameWithSafeOptional(name: string): Promise<all.SAFE_ROLE_TYPE | null> {
+  async findByNameWithSafeOptional(name: string): Promise<pt.SAFE_ROLE_TYPE | null> {
     return await this.roleRepository.findByNameWithSafe(name);
   }
 
-  async findByNameWithFullOptional(name: string): Promise<all.FULL_ROLE_TYPE | null> {
+  async findByNameWithFullOptional(name: string): Promise<pt.FULL_ROLE_TYPE | null> {
     return await this.roleRepository.findByNameWithFull(name);
   }
 
@@ -110,7 +110,7 @@ export class RoleService {
    * @param createRoleDto 角色数据
    * @returns 创建的角色
    */
-  async create(createRoleDto: CreateRoleDto): Promise<all.SAFE_ROLE_TYPE> {
+  async create(createRoleDto: CreateRoleDto): Promise<pt.SAFE_ROLE_TYPE> {
     // 检查角色名称是否已存在
     const role = await this.roleRepository.findByName(createRoleDto.name);
     if (role) throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT,{ roleName: role.name } );  
@@ -128,7 +128,7 @@ export class RoleService {
    * @throws ForbiddenException 无权限
    * @throws BadRequestException 无效操作
    */
-  async update(id: number, updateRoleDto: UpdateRoleDto, currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE ): Promise<all.DEFAULT_ROLE_TYPE> {
+  async update(id: number, updateRoleDto: UpdateRoleDto, currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE ): Promise<pt.DEFAULT_ROLE_TYPE> {
 
     // 权限检查，当前操作人是否为管理员
     if(currentUser.role.name !== 'ADMIN') {
@@ -159,7 +159,7 @@ export class RoleService {
    * @param currentUser 当前操作用户
    * @returns 分页结果
    */
-  async findAll(query: QueryRoleDto,currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE) {
+  async findAll(query: QueryRoleDto,currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE) {
     // const permission = this.authService.checkPermission(currentUser, 'ROLE', 'QUERY');
     // 权限检查
     if(currentUser.role.name !== 'ADMIN') {
@@ -196,7 +196,7 @@ export class RoleService {
    * @param currentUser 当前用户
    * @throws ForbiddenException 无权限
    */
-  async delete(id: number, currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE): Promise<boolean> {
+  async delete(id: number, currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE): Promise<boolean> {
     // 权限检查，当前操作人是否为管理员
     if(currentUser.role.name !== 'ADMIN') {
       throw new AppException('无权限删除角色', 'FORBIDDEN_DELETE_ROLE', HttpStatus.FORBIDDEN,{operator: currentUser.role.name} )

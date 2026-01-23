@@ -7,10 +7,10 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { MinioService } from '@core/minio/minio.service'
 import { File } from '@common/types/file.types'
-import { UserRepository } from './repositories/user.repository'
+import { UserRepository } from './user.repository'
 import { CreateUserDto, UpdateUserDto, UserProfileDto } from './dto/index'
 import type { Prisma, User } from '@prisma/client'
-import * as all from '@app/common/prisma-types'
+import * as pt from '@app/common/prisma-types'
 
 @Injectable()
 export class UserService {
@@ -26,7 +26,7 @@ export class UserService {
    * @returns 用户对象
    * @throws NotFoundException 用户不存在
    */
-  async findById(id: number,): Promise<all.SAFE_USER_TYPE | null> {
+  async findById(id: number,): Promise<pt.SAFE_USER_TYPE | null> {
     const user = await this.userRepository.findById(id)
     if (!user) {
       throw new NotFoundException('用户不存在')
@@ -34,12 +34,12 @@ export class UserService {
 
     return user
   }
-  async findByIdWithRole(id: number,): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
+  async findByIdWithRole(id: number,): Promise<pt.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
     const user = await this.userRepository.findByIdWithRole(id)
 
     return user
   }
-  async findByIdOptional(id: number,): Promise<all.SAFE_USER_TYPE | null> {
+  async findByIdOptional(id: number,): Promise<pt.SAFE_USER_TYPE | null> {
     const user = await this.userRepository.findById(id)
 
     return user
@@ -49,7 +49,7 @@ export class UserService {
    * @param email 用户邮箱
    * @returns 用户对象或null，包含默认的角色信息
    */
-  async findByEmail(email: string): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE> {
+  async findByEmail(email: string): Promise<pt.USER_SAFE_ROLE_DEFAULT_TYPE> {
     const user = await this.userRepository.findByEmail(email)
     if (!user) {
       throw new NotFoundException('用户不存在')
@@ -58,7 +58,7 @@ export class UserService {
     return user
   }
 
-  async findByEmailOptional(email: string): Promise<all.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
+  async findByEmailOptional(email: string): Promise<pt.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
     const user = await this.userRepository.findByEmail(email)
 
     return user
@@ -68,7 +68,7 @@ export class UserService {
    * @param email 用户邮箱
    * @returns 用户对象或null，包含完整的角色信息
    */
-  async findByEmailFullForLogin(email:string): Promise<all.USER_FULL_ROLE_DEFAULT_TYPE | null>{
+  async findByEmailFullForLogin(email:string): Promise<pt.USER_FULL_ROLE_DEFAULT_TYPE | null>{
     const user = await this.userRepository.findByEmailFullForLogin(email)
 
     return user
@@ -79,7 +79,7 @@ export class UserService {
    * @param createUserDto 用户数据
    * @returns 创建的用户
    */
-  async create(createUserDto: CreateUserDto): Promise<all.SAFE_USER_TYPE> {
+  async create(createUserDto: CreateUserDto): Promise<pt.SAFE_USER_TYPE> {
     return this.userRepository.create(createUserDto)
   }
 
@@ -92,7 +92,7 @@ export class UserService {
    * @throws ForbiddenException 无权限
    * @throws BadRequestException 无效操作
    */
-  async update(id: number, updateUserDto: UpdateUserDto, currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE): Promise<all.SAFE_USER_TYPE> {
+  async update(id: number, updateUserDto: UpdateUserDto, currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE): Promise<pt.SAFE_USER_TYPE> {
     const user = await this.findById(id)
     const updateData ={
       avatarUrl:'',
@@ -119,7 +119,7 @@ export class UserService {
    * @param userProfileDto 个人资料数据
    * @returns 更新后的用户
    */
-  async updateProfile(id: number, userProfileDto: UserProfileDto): Promise<all.SAFE_USER_TYPE> {
+  async updateProfile(id: number, userProfileDto: UserProfileDto): Promise<pt.SAFE_USER_TYPE> {
     // const user = await this.findById(id)
     const updateData ={
       avatarUrl:'',
@@ -196,7 +196,7 @@ export class UserService {
    * @returns 安全的用户对象
    */
   // TODO
-  getSafeUser(user: any): Partial<all.USER_FULL_ROLE_DEFAULT_TYPE> {
+  getSafeUser(user: any): Partial<pt.USER_FULL_ROLE_DEFAULT_TYPE> {
     const { password, ...safeUser } = user
     return safeUser
   }
@@ -206,7 +206,7 @@ export class UserService {
    * @param userId 用户ID
    * @returns 更新后的用户对象
    */
-  async incrementFailedLoginAttempts(userId: number): Promise<all.SAFE_USER_TYPE | null> {
+  async incrementFailedLoginAttempts(userId: number): Promise<pt.SAFE_USER_TYPE | null> {
 
     const user = await this.userRepository.findById(userId)
     if (!user) {
@@ -220,7 +220,7 @@ export class UserService {
    * 锁定用户账户
    * @param userId 用户ID
    */
-  async lockUser(userId: number): Promise<all.SAFE_USER_TYPE> {
+  async lockUser(userId: number): Promise<pt.SAFE_USER_TYPE> {
 
     const user = await this.userRepository.findById(userId)
     if (!user) {

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { UserRepository } from './repositories/user.repository';
+import { UserRepository } from './user.repository';
 import { MinioModule } from '@core/minio/minio.module';
 import { CaslModule } from '@core/casl/casl.module';
 

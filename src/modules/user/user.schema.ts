@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CreateUserSchema, UpdateUserSchema, UserProfileSchema } from '../dto';
+import { CreateUserSchema, UpdateUserSchema, UserProfileSchema } from './dto';
 
 // 验证创建用户请求
 export const validateCreateUser = (data: unknown) => {

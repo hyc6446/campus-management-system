@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common'
-import { RuleConfigService } from './rule-config.service'
 import { RuleConfigController } from './rule-config.controller'
-import { RuleConfigRepository } from './repositories/rule-config.repository'
+import { RuleConfigService } from './rule-config.service'
+import { RuleConfigRepository } from './rule-config.repository'
 import { AuthCoreModule } from '@core/auth/auth.module'
+
 @Module({
   imports: [AuthCoreModule],
   providers: [RuleConfigService, RuleConfigRepository],

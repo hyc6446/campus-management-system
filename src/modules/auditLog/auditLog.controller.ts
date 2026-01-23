@@ -13,7 +13,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger'
 import { ZodValidationPipe } from '@common/pipes/validation.pipe'
 import { CurrentUser } from '@common/decorators/current-user.decorator'
-import { User } from '@modules/user/entities/user.entity'
+import { User } from '@modules/user/user.entity'
 import { AuthGuard } from '@common/guards/auth.guard'
 import { RoleName } from '@modules/auth/dto/index';
 import { Roles } from '@common/decorators/roles.decorator';

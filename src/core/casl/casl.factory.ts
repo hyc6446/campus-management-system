@@ -7,7 +7,7 @@
  */
 import { Injectable } from '@nestjs/common'
 import { AbilityBuilder, createMongoAbility } from '@casl/ability'
-import { User } from '@modules/user/entities/user.entity'
+import { User } from '@modules/user/user.entity'
 import { Action, Subjects, AppAbility } from './casl.types';
 import { PermissionService } from '@modules/permission/permission.service'
 /**

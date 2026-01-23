@@ -29,7 +29,18 @@ export class AuthGuard extends PassportAuthGuard('jwt') {
     if(isPublic){
       return true;
     }
+
     // 调用Passport的JWT认证（会自动使用JwtStrategy）
-    return await super.canActivate(context) as boolean ;
+    // 注意：super.canActivate 会执行完整的认证流程，包括调用 JwtStrategy.validate
+    // 认证成功后，用户信息会被设置到 request.user
+    const result = await super.canActivate(context) as boolean;
+    
+    // 只有认证成功后，才继续执行后续逻辑
+    // if (result) {
+    //   const request = context.switchToHttp().getRequest();
+    //   console.log("AuthGuard.canActivate: 认证成功", request.user);
+    // }
+    
+    return result;
   }
 }

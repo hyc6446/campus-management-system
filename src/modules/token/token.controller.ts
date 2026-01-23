@@ -6,7 +6,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { TokenType } from '@prisma/client';
 import { RoleName } from '@modules/auth/dto/index';
 import { TokenService } from './token.service';
-import { Token } from './entities/token.entity';
+import { Token } from './token.entity';
 
 @ApiTags('Token管理')
 @Controller('tokens')

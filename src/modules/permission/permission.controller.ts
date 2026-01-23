@@ -5,9 +5,9 @@ import { ZodValidationPipe } from '@app/common/pipes/validation.pipe'
 import { CurrentUser } from '@app/common/decorators/current-user.decorator'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { PermissionService } from './permission.service'
-import { Permission } from './entities/permission.entity'
-import { RoleType } from '../role/entities/role.entity'
-import * as all from '@app/common/prisma-types'
+import { Permission } from './permission.entity'
+import { RoleType } from '@app/modules/role/role.entity'
+import * as pt from '@app/common/prisma-types'
 
 import {
   ApiTags,
@@ -68,7 +68,7 @@ export class PermissionController {
   @Get('query')
   async findAll(
     @Query(new ZodValidationPipe(QueryPermissionSchema)) query: QueryPermissionDto,
-    @CurrentUser() currentUser: all.USER_SAFE_ROLE_DEFAULT_TYPE
+    @CurrentUser() currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE
   ) {
     return await this.permissionService.findAll(query, currentUser)
   }

@@ -1,13 +1,16 @@
 import * as UserFields from './user-fields'
 import * as RoleFields from './role-fields'
 import * as PermissionFields from './permission-fields'
-import type { Prisma, User, Role, Permission } from '@prisma/client'
+// 由于 rule-config-fields 模块不存在，先注释掉相关导入，避免编译报错
+import * as RuleConfigFields from './ruleConfig-fields'
+import type { Prisma, User, Role, Permission, RuleConfig } from '@prisma/client'
 
 
 // 使用单独的重新导出语句
 export * from './user-fields'
 export * from './role-fields'
 export * from './permission-fields'
+export * from './ruleConfig-fields'
 // 定义================ 基本用户 ===========类型
 export type DEFAULT_USER_TYPE = { [K in keyof typeof UserFields.DEFAULT_USER_FIELDS]: User[K] }
 export type SAFE_USER_TYPE = { [K in keyof typeof UserFields.SAFE_USER_FIELDS]: User[K] }
@@ -32,6 +35,21 @@ export type ALLOWED_ROLE_SORT_TYPE = (typeof RoleFields.ROLE_ALLOWED_SORT_FIELDS
 export type DEFAULT_PERMISSION_TYPE = {[K in keyof typeof PermissionFields.DEFAULT_PERMISSION_FIELDS]: Permission[K]}
 export type SAFE_PERMISSION_TYPE = {[K in keyof typeof PermissionFields.SAFE_PERMISSION_FIELDS]: Permission[K]}
 export type FULL_PERMISSION_TYPE = {[K in keyof typeof PermissionFields.FULL_PERMISSION_FIELDS]: Permission[K]}
+
+// 权限过滤字段
+export type ALLOWED_PERMISSION_FILTER_TYPE = (typeof PermissionFields.PERMISSION_ALLOWED_FILTER_FIELDS)[number]
+// 权限排序字段
+export type ALLOWED_PERMISSION_SORT_TYPE = (typeof PermissionFields.PERMISSION_ALLOWED_SORT_FIELDS)[number]
+
+// 定义================ 基本规则配置 ===========类型
+export type DEFAULT_RULE_CONFIG_TYPE = {[K in keyof typeof RuleConfigFields.DEFAULT_RULE_CONFIG_FIELDS]: RuleConfig[K]}
+export type SAFE_RULE_CONFIG_TYPE = {[K in keyof typeof RuleConfigFields.SAFE_RULE_CONFIG_FIELDS]: RuleConfig[K]}
+export type FULL_RULE_CONFIG_TYPE = {[K in keyof typeof RuleConfigFields.FULL_RULE_CONFIG_FIELDS]: RuleConfig[K]}
+
+// 规则配置过滤字段
+export type ALLOWED_RULE_CONFIG_FILTER_TYPE = (typeof RuleConfigFields.RULE_CONFIG_ALLOWED_FILTER_FIELDS)[number]
+// 规则配置排序字段
+export type ALLOWED_RULE_CONFIG_SORT_TYPE = (typeof RuleConfigFields.RULE_CONFIG_ALLOWED_SORT_FIELDS)[number]
 
 
 

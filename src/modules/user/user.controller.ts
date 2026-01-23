@@ -28,7 +28,7 @@ import { ZodValidationPipe } from '@common/pipes/validation.pipe'
 import { AuthGuard } from '@common/guards/auth.guard'
 import { File } from '@common/types/file.types'
 import { UserService } from './user.service'
-import { User } from './entities/user.entity'
+import { User } from './user.entity'
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -40,7 +40,7 @@ import {
   CreateUserDtoSwagger,
   UpdateUserDtoSwagger,
 } from './dto/index'
-import * as all from '@app/common/prisma-types'
+import * as pt from '@app/common/prisma-types'
 
 @ApiTags('用户管理')
 @ApiBearerAuth()

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CaslFactory } from './casl.factory';
 import { AbilityFactory } from './ability.factory';
 import { Action, Subjects, AppAbility } from './casl.types';
-import { User } from '@modules/user/entities/user.entity';
+import { User } from '@modules/user/user.entity';
 
 /**
  * CASL 权限服务类

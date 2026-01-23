@@ -1,10 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger'
 import { z } from 'zod'
+import { createZodDto } from 'nestjs-zod'
 
 export const UpdateRuleConfigSchema = z
   .object({
-    rule: z.string('规则名称不能为空').optional(),
-    type: z.enum(['action', 'subject'], '无效的规则类型').optional(),
+    rule: z.string('规则名称不能为空').trim().toLowerCase().optional().describe('规则名称'),
+    type: z
+      .enum(['action', 'subject'], { message: '无效的规则类型' })
+      .default('action')
+      .transform((val) => val?.trim().toLowerCase() || 'action')
+      .optional()
+      .describe('规则类型,范围:action,subject'),
   })
   .refine(
     data => {
@@ -13,22 +18,9 @@ export const UpdateRuleConfigSchema = z
     { message: '必须提供至少一个有效的字段', path: ['rule', 'type'] }
   )
 
-export type UpdateRuleConfigDto = z.infer<typeof UpdateRuleConfigSchema>
+// 使用 createZodDto 创建 DTO 类
+// nestjs-zod V5 会自动处理可选字段和验证逻辑
+export class UpdateRuleConfigDto extends createZodDto(UpdateRuleConfigSchema) {}
 
-export class UpdateRuleConfigDtoSwagger {
-  @ApiProperty({
-    example: 'READ', // 文档中显示的示例值
-    description: '规则名称', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: true, // 是否为必填字段
-  })
-  rule?: string = 'READ'
-  @ApiProperty({
-    example: 'action', // 文档中显示的示例值
-    description: '规则类型', // 文档中显示的字段描述
-    enum: ['action', 'subject'], // 枚举值
-    type: String, // 字段类型
-    required: true, // 是否为必填字段
-  })
-  type?: string = 'action'
-}
+// 导出类型供其他地方使用
+export type UpdateRuleConfigType = z.infer<typeof UpdateRuleConfigSchema>

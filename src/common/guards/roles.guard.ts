@@ -15,6 +15,7 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest()
     const user = request.user
+    // console.log("RolesGuard.canActivate",user)
     if (!user) {
       throw new ForbiddenException('用户未认证')
     }

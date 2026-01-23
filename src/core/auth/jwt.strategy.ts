@@ -69,6 +69,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     }
     // 将验证通过的用户信息附加到请求对象，便于后续中间件和控制器访问
     req.user = user;
+    // console.log("JwtStrategy.validate",user)
     return user;
   }
 }

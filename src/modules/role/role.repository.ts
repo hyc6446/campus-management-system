@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '@core/prisma/prisma.service';
-import { Role } from '../entities/role.entity';
-import { CreateRoleDto, UpdateRoleDto } from '../dto/index';
-import * as all from '@app/common/prisma-types';
+import { Role } from './role.entity';
+import { CreateRoleDto, UpdateRoleDto } from './dto/index';
+import * as pt from '@app/common/prisma-types';
 
 
 @Injectable()
@@ -19,27 +19,27 @@ export class RoleRepository {
    * @param id 角色ID
    * @returns 角色对象或null
    */
-  async findById(id: number): Promise<all.DEFAULT_ROLE_TYPE | null> {
+  async findById(id: number): Promise<pt.DEFAULT_ROLE_TYPE | null> {
     const role = await this.prisma.role.findUnique({
       where: { id },
-      select: all.DEFAULT_ROLE_FIELDS,
+      select: pt.DEFAULT_ROLE_FIELDS,
     });
     
     return role;
   }
 
-  async findByIdWithSafe(id: number): Promise<all.SAFE_ROLE_TYPE | null> {
+  async findByIdWithSafe(id: number): Promise<pt.SAFE_ROLE_TYPE | null> {
     const role = await this.prisma.role.findUnique({
       where: { id },
-      select: all.SAFE_ROLE_FIELDS,
+      select: pt.SAFE_ROLE_FIELDS,
     });
     
     return role;
   }
-  async findByIdWithFull(id: number): Promise<all.FULL_ROLE_TYPE | null> {
+  async findByIdWithFull(id: number): Promise<pt.FULL_ROLE_TYPE | null> {
     const role = await this.prisma.role.findUnique({
       where: { id },
-      select: all.FULL_ROLE_FIELDS,
+      select: pt.FULL_ROLE_FIELDS,
     });
     
     return role;
@@ -53,26 +53,26 @@ export class RoleRepository {
    * @param name 角色名称
    * @returns 角色对象或null
    */
-  async findByName(name: string): Promise<all.DEFAULT_ROLE_TYPE | null> {
+  async findByName(name: string): Promise<pt.DEFAULT_ROLE_TYPE | null> {
     const role = await this.prisma.role.findUnique({
       where: { name },
-      select: all.DEFAULT_ROLE_FIELDS,
+      select: pt.DEFAULT_ROLE_FIELDS,
     });
     
     return role;
   }
-  async findByNameWithSafe(name: string): Promise<all.SAFE_ROLE_TYPE | null> {
+  async findByNameWithSafe(name: string): Promise<pt.SAFE_ROLE_TYPE | null> {
     const role = await this.prisma.role.findUnique({
       where: { name },
-      select: all.SAFE_ROLE_FIELDS,
+      select: pt.SAFE_ROLE_FIELDS,
     });
     
     return role;
   }
-  async findByNameWithFull(name: string): Promise<all.FULL_ROLE_TYPE | null> {
+  async findByNameWithFull(name: string): Promise<pt.FULL_ROLE_TYPE | null> {
     const role = await this.prisma.role.findUnique({
       where: { name },
-      select: all.FULL_ROLE_FIELDS,
+      select: pt.FULL_ROLE_FIELDS,
     });
     
     return role;
@@ -82,10 +82,10 @@ export class RoleRepository {
    * @param roleData 角色数据
    * @returns 创建的角色
    */
-  async create(roleData: CreateRoleDto): Promise<all.SAFE_ROLE_TYPE> {
+  async create(roleData: CreateRoleDto): Promise<pt.SAFE_ROLE_TYPE> {
     const createdRole = await this.prisma.role.create({
       data: roleData,
-      select: all.SAFE_ROLE_FIELDS,
+      select: pt.SAFE_ROLE_FIELDS,
     });
     
     return createdRole;
@@ -97,11 +97,11 @@ export class RoleRepository {
    * @param updateData 更新数据
    * @returns 更新后的角色
    */
-  async update(id: number, updateData: UpdateRoleDto): Promise<all.DEFAULT_ROLE_TYPE> {
+  async update(id: number, updateData: UpdateRoleDto): Promise<pt.DEFAULT_ROLE_TYPE> {
     const updatedRole = await this.prisma.role.update({
       where: { id },
       data: updateData,
-      select: all.DEFAULT_ROLE_FIELDS,
+      select: pt.DEFAULT_ROLE_FIELDS,
     });
     
     // 将更新后的角色数据转换为Role实体类实例

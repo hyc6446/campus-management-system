@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { TokenType } from '@prisma/client';
-import { TokenRepository } from './repositories/token.repository';
-import { Token } from './entities/token.entity';
+import { TokenRepository } from './token.repository';
+import { Token } from './token.entity';
 // import { TokenSelect, TokenWithFields } from '@app/common/types/entity/token.type';
 
 @Injectable()

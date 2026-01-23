@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer'
-import { Role } from '@modules/role/entities/role.entity'
+import { Role } from '@modules/role/role.entity'
 
 // 用户实体类 - 与Prisma schema保持一致
 export class User {

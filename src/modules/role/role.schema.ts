@@ -1,6 +1,6 @@
 
 // 从DTO模块导入预定义的Zod验证模式
-import { CreateRoleSchema, UpdateRoleSchema } from '../dto/index';
+import { CreateRoleSchema, UpdateRoleSchema } from './dto/index';
 
 /**
  * 验证创建角色请求数据

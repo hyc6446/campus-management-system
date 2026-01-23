@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
-import { UserRepository } from '@modules/user/repositories/user.repository';
+import { UserRepository } from '@modules/user/user.repository';
 import { UserModule } from '@modules/user/user.module';
 import { TokenModule } from '@modules/token/token.module';
 import { RedisModule } from '@core/redis/redis.module';
