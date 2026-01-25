@@ -25,9 +25,7 @@ export class AbilityFactory {
    * // ability.can('read', 'Article') 会返回 false
    */
   createForNull(): AppAbility {
-    // 创建一个空的能力构建器，不添加任何权限规则
     const { build } = new AbilityBuilder<AppAbility>(createMongoAbility);
-    // 构建能力对象，使用默认的主题类型检测
     return build();
   }
 

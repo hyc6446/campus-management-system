@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '@core/prisma/prisma.service'
-import * as dto from './dto'
+import { CreateRuleConfigDto, UpdateRuleConfigDto } from './dto'
 import * as pt from '@app/common/prisma-types'
 
 @Injectable()
 export class RuleConfigRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findAll(
     page: number,
@@ -16,14 +16,14 @@ export class RuleConfigRepository {
     orderBy: Prisma.RuleConfigOrderByWithRelationInput[]
   ) {
     const [data, total] = await Promise.all([
-      this.prisma.ruleConfig.findMany({ 
-        where, 
-        skip, 
-        take: 
-        limit, 
+      this.prisma.ruleConfig.findMany({
+        where,
+        skip,
+        take:
+          limit,
         orderBy,
         select: pt.DEFAULT_RULE_CONFIG_FIELDS,
-       }),
+      }),
       this.prisma.ruleConfig.count({ where }),
     ])
 
@@ -82,7 +82,7 @@ export class RuleConfigRepository {
    * @param createRuleConfigDto 规则配置数据
    * @returns 创建的规则配置
    */
-  async create(createRuleConfigDto: dto.CreateRuleConfigDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
+  async create(createRuleConfigDto: CreateRuleConfigDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
     return this.prisma.ruleConfig.create({
       data: createRuleConfigDto,
       select: pt.DEFAULT_RULE_CONFIG_FIELDS,
@@ -94,10 +94,7 @@ export class RuleConfigRepository {
    * @param updateRuleConfigDto 更新数据
    * @returns 更新后的规则配置
    */
-  async update(
-    id: number,
-    updateRuleConfigDto: dto.UpdateRuleConfigDto
-  ): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
+  async update(id: number, updateRuleConfigDto: UpdateRuleConfigDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
     return this.prisma.ruleConfig.update({
       where: { id },
       data: updateRuleConfigDto,
@@ -112,7 +109,7 @@ export class RuleConfigRepository {
   async remove(id: number): Promise<pt.FULL_RULE_CONFIG_TYPE> {
     return this.prisma.ruleConfig.update({
       where: { id, },
-      data:{deletedAt:new Date()},
+      data: { deletedAt: new Date() },
       select: pt.FULL_RULE_CONFIG_FIELDS,
     })
   }

@@ -1,14 +1,9 @@
 // 统一导出所有DTO类、Schema和类型
-import { LoginDtoSwagger, LoginSchema, type LoginDto } from './login.dto';
-import { RoleName, RegisterDtoSwagger, RegisterSchema, type RegisterDto } from './register.dto';
-import { RefreshDtoSwagger, RefreshTokenSchema, type RefreshDto } from './refresh.dto';
+import { LoginDto, LoginSchema } from './login.dto';
+import { RegisterDto, RegisterSchema } from './register.dto';
+import { RefreshTokenDto, RefreshTokenSchema } from './refresh.dto';
 
 export {
-  RoleName,
-  // Swagger类
-  LoginDtoSwagger,
-  RegisterDtoSwagger,
-  RefreshDtoSwagger,
   // Schema
   LoginSchema,
   RegisterSchema,
@@ -16,5 +11,5 @@ export {
   // 类型
   LoginDto,
   RegisterDto,
-  RefreshDto,
+  RefreshTokenDto,
 };

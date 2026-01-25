@@ -21,17 +21,30 @@ export const paginationSchema = z.object({
     .describe('每页数量'),
 })
 
-export const sortingSchema = z.object({
-  sortBy: z
-    .string({ message: '排序字段必须为字符串' })
-    .transform((val) => val?.trim() || 'createdAt')
-    .default('createdAt')
-    .optional()
-    .describe('排序字段'),
-  order: z
-    .string({ message: '排序方式必须为字符串' })
-    .transform((val) => val?.trim() || 'desc')
-    .default('desc')
-    .optional()
-    .describe('排序方式'),
-})
+// 通用排序字段 Schema 生成函数
+export function createSortingSchema(allowedSortFields: string[] = ['createdAt']) {
+  return z.object({
+    sortBy: z
+      .string({ message: '排序字段必须为字符串' })
+      .default('createdAt')
+      .optional()
+      .describe('排序字段'),
+    order: z
+      .string({ message: '排序方式必须为字符串' })
+      .default('desc')
+      .optional()
+      .describe('排序方式'),
+  });
+}
+
+// 排序字段验证函数
+export function validateSortFields(data: any, allowedSortFields: string[] = ['createdAt']) {
+  const sortStr = data.sortBy?.trim().toLowerCase() || 'createdAt';
+  const orderStr = data.order?.trim().toLowerCase() || 'desc';
+  const sortBy: string = allowedSortFields.includes(sortStr) ? sortStr : 'createdAt';
+  const order: string = ['asc', 'desc'].includes(orderStr) ? orderStr : 'desc';
+  return { ...data, sortBy, order };
+}
+
+// 保持原有的默认排序 Schema（向后兼容）
+export const sortingSchema = createSortingSchema();

@@ -6,6 +6,9 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
 import { PrismaService } from '@core/prisma/prisma.service';
+// 设置终端编码为 UTF-8
+process.stdout.setEncoding('utf8');
+process.stdin.setEncoding('utf8');
 process.env.TZ = 'Asia/Shanghai';
 
 async function bootstrap() {

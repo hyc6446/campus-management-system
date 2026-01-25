@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '@core/prisma/prisma.service';
 import { CreatePermissionDto, UpdatePermissionDto } from './dto/index';
-import { Prisma } from '@prisma/client';
 import * as pt from '@app/common/prisma-types';
 import { InputJsonValue } from '@prisma/client/runtime/library';
 
@@ -162,7 +162,7 @@ export class PermissionRepository {
    * @param orderBy 排序条件
    * @returns 权限列表和总数
    */
-  async findAll(page:number, limit:number, skip:number, where: Prisma.PermissionWhereInput, orderBy: Prisma.PermissionOrderByWithRelationInput[]) {
+  async findAll(page:number, limit:number, skip:number, where: Prisma.PermissionWhereInput, orderBy: Prisma.PermissionOrderByWithRelationInput) {
     const [data, total] = await Promise.all([
       this.prisma.permission.findMany({ where, skip, take: limit, orderBy }),
       this.prisma.permission.count({ where }),

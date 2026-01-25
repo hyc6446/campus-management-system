@@ -31,7 +31,7 @@ import type { Prisma } from '@prisma/client';
 // 允许的查询筛选字段
 const RULE_CONFIG_ALLOWED_FILTER_FIELDS = [ "id", "rule", "type", "createdAt", "deletedAt" ] as const;
 // 允许的排序字段
-const RULE_CONFIG_ALLOWED_SORT_FIELDS = [ "id", "createdAt" ] as const;
+const RULE_CONFIG_ALLOWED_SORT_FIELDS = [ "id", "createdAt" ];
 
 export {
   RULE_CONFIG_TABLE_FIELDS, 

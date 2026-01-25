@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { UserService } from '@modules/user/user.service';
-import { RoleService } from '@modules/role/role.service';
-import { AuthService as CoreAuthService } from '@core/auth/auth.service';
-import { LoginDto, RegisterDto } from './dto/index';
+import { Injectable, HttpStatus } from '@nestjs/common';
+import { UserService } from '@app/modules/user/user.service';
+import { RoleService } from '@app/modules/role/role.service';
+import { AuthService as CoreAuthService } from '@app/core/auth/auth.service';
+import { LoginDto, RegisterDto } from '@app/modules/auth/dto';
+import { AppException } from '@app/common/exceptions/app.exception'
 
 
 @Injectable()
@@ -22,13 +23,13 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     // 1.检查是否为默认账户
     if (loginDto.email === 'anonymous@example.com') {
-      throw new UnauthorizedException('无效的账户');
+      throw new AppException('该用户禁止登陆','UNAUTHORIZED',HttpStatus.UNAUTHORIZED);
     }
     // 2.验证用户凭据
     const user = await this.coreAuthService.validateUser( loginDto.email, loginDto.password );
 
     if (!user) {
-      throw new UnauthorizedException('无效的邮箱或密码');
+      throw new AppException('无效的邮箱或密码','UNAUTHORIZED',HttpStatus.UNAUTHORIZED);
     }
     
     const { accessToken, refreshToken } = await this.coreAuthService.generateTokens(user);
@@ -53,13 +54,13 @@ export class AuthService {
     // 检查邮箱是否已存在
     const existingUser = await this.userService.findByEmailOptional(registerDto.email);
     if (existingUser) {
-      throw new ConflictException('该邮箱已被注册');
+      throw new AppException('该邮箱已被注册','CONFLICT',HttpStatus.CONFLICT,{email:registerDto.email});
     }
 
     // 查找角色
     const role = await this.roleService.findByNameOptional(registerDto.role);
     if (!role) {
-      throw new ConflictException('无效的角色');
+      throw new AppException('角色不存在','Role_NOT_FOUND',HttpStatus.BAD_REQUEST,{role:registerDto.role});
     }
 
     // 创建新用户
@@ -78,6 +79,7 @@ export class AuthService {
    * @returns 新的访问令牌
    * @throws UnauthorizedException 无效令牌
    */
+  // TODO: 实现刷新令牌逻辑
   async refreshToken(refreshToken: string) {
     // try {
     //   // 1. 验证用户和令牌是否匹配

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
 import { z } from 'zod'
+import { createZodDto } from 'nestjs-zod';
 import { CaslConditionValue } from '@common/types/permission.type'
 
 // CASL条件语法的递归校验规则
@@ -40,47 +40,16 @@ const caslConditionSchema: z.ZodType<CaslConditionValue> = z.lazy(() =>
 )
 
 export const CreatePermissionSchema = z.object({
-  action: z.string('操作类型不能为空').transform(val => val.trim().toUpperCase()),
-  subject: z.string('操作对象类型不能为空').transform(val => val.trim().toUpperCase()),
-  // 操作条件字段：可选，必须是有效的CASL条件对象
-  conditions: caslConditionSchema.optional(),
-  roleId: z.coerce.number().int('关联角色ID必须是整数'),
-  createdAt: z.union([z.string(), z.date()]).optional(),
+  action: z.string('操作类型不能为空').transform(val => val.trim().toUpperCase()).describe('动作'),
+  subject: z.string('操作对象类型不能为空').transform(val => val.trim().toUpperCase()).describe('对象'),
+  conditions: caslConditionSchema.optional().describe('条件'),
+  roleId: z.coerce.number().int('关联角色ID必须是整数').describe('角色ID'),
+  createdAt: z.union([z.string(), z.date()]).optional().describe('创建时间'),
 })
 
-export type CreatePermissionDto = z.infer<typeof CreatePermissionSchema>
 
-export class CreatePermissionDtoSwagger {
-  // 操作类型字段的Swagger文档配置
-  @ApiProperty({
-    example: 'create', // 文档中显示的示例值
-    description: '操作类型', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: true, // 是否为必填字段
-  })
-  action!: string
-  // 操作对象类型字段的Swagger文档配置
-  @ApiProperty({
-    example: 'user', // 文档中显示的示例值
-    description: '操作对象类型', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: true, // 是否为必填字段
-  })
-  subject!: string
-  // 操作条件字段的Swagger文档配置
-  @ApiProperty({
-    example: '{"name": "Admin"}', // 文档中显示的示例值
-    description: '操作条件', // 文档中显示的字段描述
-    type: Object, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  conditions!: CaslConditionValue | null
-  // 操作时间字段的Swagger文档配置
-  @ApiProperty({
-    example: '2023-01-01', // 文档中显示的示例值
-    description: '操作时间', // 文档中显示的字段描述
-    type: String, // 字段类型
-    required: false, // 是否为必填字段
-  })
-  createdAt!: Date
-}
+
+export class CreatePermissionDto extends createZodDto(CreatePermissionSchema) {}
+
+// 导出类型供其他地方使用
+export type CreatePermissionType = z.infer<typeof CreatePermissionSchema>

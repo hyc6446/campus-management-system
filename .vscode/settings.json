@@ -1,4 +1,31 @@
 {
-    "typescript.tsdk": "node_modules\\typescript\\lib",
-    "prisma.pinToPrisma6": true
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "prisma.pinToPrisma6": true,
+  "terminal.integrated.encoding": "utf8",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "args": [ ]
+    }
+  },
+  "todo-tree.highlights.defaultHighlight": {
+    "icon": "alert",
+    "type": "text",
+    "foreground": "#FF0000",
+    "background": "#FFFFFF",
+    "opacity": 50,
+    "iconColour": "#000000"
+  },
+  "todo-tree.highlights.customHighlight": {
+    "TODO": {
+      "icon": "check",
+      "type": "line"
+    },
+    "FIXME": {
+      "foreground": "#000000",
+      "iconColour": "#FFFF00",
+      "gutterIcon": true
+    }
+  }
 }

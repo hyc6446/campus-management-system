@@ -4,7 +4,7 @@ import { AuthGuard } from '@common/guards/auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { TokenType } from '@prisma/client';
-import { RoleName } from '@modules/auth/dto/index';
+import { RoleType } from '@app/modules/role/role.entity';
 import { TokenService } from './token.service';
 import { Token } from './token.entity';
 
@@ -19,7 +19,7 @@ export class TokenController {
   @ApiParam({ name: 'id', description: 'Token ID', type: Number })
   @ApiResponse({ status: 200, description: '成功获取Token信息', type: Token })
   @ApiResponse({ status: 404, description: 'Token不存在' })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Get(':id')
   async getTokenById(@Param('id') id: number): Promise<Token> {
     return this.tokenService.findById(id);
@@ -30,7 +30,7 @@ export class TokenController {
   @ApiQuery({ name: 'token', description: 'Token值', type: String })
   @ApiResponse({ status: 200, description: '成功获取Token信息', type: Token })
   @ApiResponse({ status: 404, description: 'Token不存在' })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Get('by-token')
   async getTokenByValue(@Query('token') tokenValue: string): Promise<Token> {
     return this.tokenService.findByToken(tokenValue);
@@ -41,7 +41,7 @@ export class TokenController {
   @ApiParam({ name: 'userId', description: '用户ID', type: Number })
   @ApiQuery({ name: 'type', description: 'Token类型', type: String, required: false })
   @ApiResponse({ status: 200, description: '成功获取用户的Token列表', type: [Token] })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Get('user/:userId')
   async getUserTokens(
     @Param('userId') userId: number, 
@@ -61,7 +61,7 @@ export class TokenController {
   @ApiParam({ name: 'userId', description: '用户ID', type: Number })
   @ApiQuery({ name: 'type', description: 'Token类型', type: String, required: false })
   @ApiResponse({ status: 200, description: '成功获取用户的有效Token列表', type: [Token] })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Get('user/:userId/active')
   async getUserActiveTokens(
     @Param('userId') userId: number, 
@@ -81,7 +81,7 @@ export class TokenController {
   @ApiResponse({ status: 200, description: 'Token有效' })
   @ApiResponse({ status: 400, description: 'Token无效' })
   @ApiResponse({ status: 404, description: 'Token不存在' })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Get('validate')
   async validateToken(
     @Query('token') tokenValue: string, 
@@ -105,7 +105,7 @@ export class TokenController {
   @ApiParam({ name: 'id', description: 'Token ID', type: Number })
   @ApiResponse({ status: 200, description: 'Token撤销成功', type: Token })
   @ApiResponse({ status: 404, description: 'Token不存在' })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Put(':id/revoke')
   async revokeToken(@Param('id') id: number): Promise<Token> {
     return this.tokenService.revoke(id);
@@ -116,7 +116,7 @@ export class TokenController {
   @ApiParam({ name: 'userId', description: '用户ID', type: Number })
   @ApiQuery({ name: 'type', description: 'Token类型', type: String })
   @ApiResponse({ status: 200, description: 'Token撤销成功', type: [Token] })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Put('user/:userId/revoke')
   async revokeUserTokens(
     @Param('userId') userId: number, 
@@ -133,7 +133,7 @@ export class TokenController {
   @ApiParam({ name: 'id', description: 'Token ID', type: Number })
   @ApiResponse({ status: 200, description: 'Token删除成功' })
   @ApiResponse({ status: 404, description: 'Token不存在' })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Delete(':id')
   async deleteToken(@Param('id') id: number): Promise<{ success: boolean }> {
     await this.tokenService.delete(id);
@@ -145,7 +145,7 @@ export class TokenController {
   @ApiParam({ name: 'userId', description: '用户ID', type: Number })
   @ApiQuery({ name: 'type', description: 'Token类型', type: String })
   @ApiResponse({ status: 200, description: 'Token删除成功', schema: { example: { count: 2 } } })
-  @Roles(RoleName.ADMIN)
+  @Roles(RoleType.ADMIN)  
   @Delete('user/:userId')
   async deleteUserTokens(
     @Param('userId') userId: number, 

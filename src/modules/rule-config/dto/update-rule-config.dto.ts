@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { createZodDto } from 'nestjs-zod'
+import { RULE_CONFIG_ALLOWED_SORT_FIELDS } from '@app/common/prisma-types'
 
 export const UpdateRuleConfigSchema = z
   .object({

@@ -1,13 +1,3 @@
-/**
- * CASL 权限守卫
- * 用于拦截请求并检查用户是否具有执行特定操作的权限
- * 
- * 主要功能：
- * - 从装饰器中提取权限要求
- * - 获取当前用户的权限能力对象
- * - 验证用户是否具有所有要求的权限
- * - 无权限时抛出 ForbiddenException
- */
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { CaslService } from './casl.service';

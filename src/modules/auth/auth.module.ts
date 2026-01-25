@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { AuthCoreModule } from '@core/auth/auth.module';
-import { UserModule } from '@modules/user/user.module';
-// import { TokenModule } from '@modules/token/token.module';
-import { RoleModule } from '@modules/role/role.module';
-import { CaslModule } from '@core/casl/casl.module';
+import { AuthController } from '@app/modules/auth/auth.controller';
+import { AuthService } from '@app/modules/auth/auth.service';
+import { AuthCoreModule } from '@app/core/auth/auth.module';
+import { UserModule } from '@app/modules/user/user.module';
+import { RoleModule } from '@app/modules/role/role.module';
+import { CaslModule } from '@app/core/casl/casl.module';
 
 @Module({
   imports: [

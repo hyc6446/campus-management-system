@@ -4,23 +4,20 @@ import { CreateRuleConfigDto, UpdateRuleConfigDto, QueryRuleConfigDto } from './
 import { AppException } from '@app/common/exceptions/app.exception'
 import { Prisma } from '@prisma/client'
 import * as pt from '@app/common/prisma-types'
+import { validateSortFields } from '@app/common/validators/zod-validators'
 
 @Injectable()
 export class RuleConfigService {
-  constructor(private readonly ruleConfigRepository: RuleConfigRepository) {}
+  constructor(private readonly ruleConfigRepository: RuleConfigRepository) { }
 
   async findAll(query: QueryRuleConfigDto) {
     // 1.检查是否具有查看的权限
-    const {
-      page = 1,
-      limit = 10,
-      sortBy = 'createdAt',
-      order = 'desc',
-      id,
-      rule,
-      type,
-      createdAt,
-    } = query
+    const { page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', id, rule, type, createdAt } = query
+    
+    // 验证排序字段
+    const validatedSort = validateSortFields({ sortBy, order }, pt.RULE_CONFIG_ALLOWED_SORT_FIELDS)
+    const { sortBy: validatedSortBy, order: validatedOrder } = validatedSort
+    
     const skip = (page - 1) * limit
     if (limit > 100) {
       throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, {
@@ -33,10 +30,10 @@ export class RuleConfigService {
     if (type) where.type = type
     if (createdAt) where.createdAt = { equals: new Date(createdAt) }
     const orderBy: Prisma.RuleConfigOrderByWithRelationInput[] = []
-    if (sortBy && order) {
-      const sortKeys = sortBy.split(',')
-      const sortOrders = order.split(',')
-      sortKeys.forEach((key, index) => {
+    if (validatedSortBy && validatedOrder) {
+      const sortKeys = validatedSortBy.split(',')
+      const sortOrders = validatedOrder.split(',')
+      sortKeys.forEach((key: string, index: number) => {
         const validOrder = sortOrders[index]
         orderBy.push({
           [key as keyof Prisma.RuleConfigOrderByWithRelationInput]: validOrder as Prisma.SortOrder,

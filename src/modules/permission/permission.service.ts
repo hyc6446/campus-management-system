@@ -1,17 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException, HttpStatus } from '@nestjs/common'
-import { PermissionRepository } from './permission.repository'
-import { Permission } from './permission.entity'
-import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto } from './dto/index'
+import { Injectable, HttpStatus } from '@nestjs/common'
+import { PermissionRepository } from '@app/modules/permission/permission.repository'
+import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto } from '@app/modules/permission/dto'
 import * as pt from '@app/common/prisma-types'
 import { AppException } from '@app/common/exceptions/app.exception'
 import { Prisma } from '@prisma/client'
 
 @Injectable()
 export class PermissionService {
-  constructor(private permissionRepository: PermissionRepository) {}
+  constructor(private permissionRepository: PermissionRepository) { }
 
   /**
-   * 通过ID查找权限-严格模式
+   * 通过ID查找权限
    * 区分为
    * --包含默认字段 findById
    * --包含安全字段 findByIdWithSafe
@@ -29,37 +28,14 @@ export class PermissionService {
       throw new AppException('权限不存在', 'PERMISSION_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
     return permission
   }
-  async findByIdWithSafe(id: number): Promise<pt.SAFE_PERMISSION_TYPE> {
-    const permission = await this.permissionRepository.findByIdWithSafe(id)
-    if (!permission)
-      throw new AppException('权限不存在', 'PERMISSION_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
-    return permission
-  }
-  async findByIdWithFull(id: number): Promise<pt.FULL_PERMISSION_TYPE> {
-    const permission = await this.permissionRepository.findByIdWithFull(id)
-    if (!permission)
-      throw new AppException('权限不存在', 'PERMISSION_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
-    return permission
-  }
+  // async findByIdWithSafe(id: number): Promise<pt.SAFE_PERMISSION_TYPE> {}
+  // async findByIdWithFull(id: number): Promise<pt.FULL_PERMISSION_TYPE> {}
 
-  /**
-   * 通过ID查找权限-非严格模式
-   * 区分为
-   * --包含默认字段 findByIdOptional
-   * --包含安全字段 findByIdOptionalWithSafe
-   * --包含完整字段 findByIdOptionalWithFull
-   * @param id 权限ID
-   * @returns 权限对象
-   */
   async findByIdOptional(id: number): Promise<pt.DEFAULT_PERMISSION_TYPE | null> {
     return await this.permissionRepository.findById(id)
   }
-  async findByIdOptionalWithSafe(id: number): Promise<pt.SAFE_PERMISSION_TYPE | null> {
-    return await this.permissionRepository.findByIdWithSafe(id)
-  }
-  async findByIdOptionalWithFull(id: number): Promise<pt.FULL_PERMISSION_TYPE | null> {
-    return await this.permissionRepository.findByIdWithFull(id)
-  }
+  // async findByIdOptionalWithSafe(id: number): Promise<pt.SAFE_PERMISSION_TYPE | null> {}
+  // async findByIdOptionalWithFull(id: number): Promise<pt.FULL_PERMISSION_TYPE | null> {}
 
   /**
    * 通过roleId查找权限-严格模式
@@ -79,41 +55,14 @@ export class PermissionService {
       })
     return permissions
   }
-  async findByRoleIdWithSafe(roleId: number): Promise<pt.SAFE_PERMISSION_TYPE[]> {
-    const permissions = await this.permissionRepository.findByRoleIdWithSafe(roleId)
-    if (!permissions)
-      throw new AppException('权限列表不存在', 'PERMISSION_LIST_NOT_FOUND', HttpStatus.NOT_FOUND, {
-        roleId,
-      })
-    return permissions
-  }
-  async findByRoleIdWithFull(roleId: number): Promise<pt.FULL_PERMISSION_TYPE[]> {
-    const permissions = await this.permissionRepository.findByRoleIdWithFull(roleId)
-    if (!permissions)
-      throw new AppException('权限列表不存在', 'PERMISSION_LIST_NOT_FOUND', HttpStatus.NOT_FOUND, {
-        roleId,
-      })
-    return permissions
-  }
+  // async findByRoleIdWithSafe(roleId: number): Promise<pt.SAFE_PERMISSION_TYPE[]> {}
+  // async findByRoleIdWithFull(roleId: number): Promise<pt.FULL_PERMISSION_TYPE[]> {}
 
-  /**
-   * 通过roleId查找权限-非严格模式
-   * 区分为
-   * --包含默认字段 findByRoleIdOptional
-   * --包含安全字段 findByRoleIdWithSafeOptional
-   * --包含完整字段 findByRoleIdWithFullOptional
-   * @param roleId 角色ID
-   * @returns 权限对象
-   */
   async findByRoleIdOptional(roleId: number): Promise<pt.DEFAULT_PERMISSION_TYPE[] | null> {
     return await this.permissionRepository.findByRoleId(roleId)
   }
-  async findByRoleIdOptionalWithSafe(roleId: number): Promise<pt.SAFE_PERMISSION_TYPE[] | null> {
-    return await this.permissionRepository.findByRoleIdWithSafe(roleId)
-  }
-  async findByRoleIdOptionalWithFull(roleId: number): Promise<pt.FULL_PERMISSION_TYPE[] | null> {
-    return await this.permissionRepository.findByRoleIdWithFull(roleId)
-  }
+  // async findByRoleIdOptionalWithSafe(roleId: number): Promise<pt.SAFE_PERMISSION_TYPE[] | null> {}
+  // async findByRoleIdOptionalWithFull(roleId: number): Promise<pt.FULL_PERMISSION_TYPE[] | null> {}
 
   /**
    * 创建新权限
@@ -142,13 +91,6 @@ export class PermissionService {
     // 3.检查conditions是否符合CASL条件语法
     // 4.检查待更新的权限是否已存在相应数据
     // 5.检查id是否存在
-    // const permission = await this.findById(id)
-    // if (!permission)
-    //   throw new AppException('权限不存在', 'PERMISSION_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
-    // // 只有管理员可以更新权限
-    // if (permission.id !== 1) {
-    //   throw new ForbiddenException('无权限修改此权限')
-    // }
 
     return this.permissionRepository.update(id, updatePermissionDto)
   }
@@ -160,10 +102,9 @@ export class PermissionService {
    * @param filters 过滤条件
    * @returns 分页结果
    */
-  async findAll(query: QueryPermissionDto, currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE) {
-    console.log("currentUser===",currentUser)
+  async findAll(query: QueryPermissionDto) {
     // 1.检查操作者是否有查询权限
-    const {page = 1,limit = 10,sortBy = 'createdAt',order = 'desc',id,action,subject,roleId,createdAt} = query
+    const { page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', id, action, subject, roleId, createdAt } = query
     const skip = (page - 1) * limit
     if (limit > 100) {
       throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, {
@@ -176,19 +117,8 @@ export class PermissionService {
     if (subject) where.subject = subject
     if (roleId) where.roleId = roleId
     if (createdAt) where.createdAt = { equals: new Date(createdAt) }
-    const orderBy: Prisma.PermissionOrderByWithRelationInput[] = []
-    if (sortBy && order) {
-      const sortKeys = sortBy.split(',')
-      const sortOrders = order.split(',')
-      sortKeys.forEach((key, index) => {
-        const validOrder = sortOrders[index]
-        orderBy.push({
-          [key as keyof Prisma.RoleOrderByWithRelationInput]: validOrder as Prisma.SortOrder,
-        })
-      })
-    } else {
-      orderBy.push({ createdAt: 'desc' })
-    }
+    const orderBy: Prisma.PermissionOrderByWithRelationInput = {}
+    if (sortBy && order)  orderBy[sortBy as keyof Prisma.PermissionOrderByWithRelationInput] = order as Prisma.SortOrder
     return this.permissionRepository.findAll(page, limit, skip, where, orderBy)
   }
 
@@ -205,7 +135,7 @@ export class PermissionService {
     const permission = await this.findById(id)
     // 只有管理员可以删除权限
     if (permission.id !== 1) {
-      throw new ForbiddenException('无权限删除此权限')
+      throw new AppException('无权限删除此权限', 'NO_PERMISSION', HttpStatus.FORBIDDEN, { id })
     }
 
     await this.permissionRepository.delete(id)

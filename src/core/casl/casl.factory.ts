@@ -32,9 +32,7 @@ export class CaslFactory {
   async defineAbility(user: User): Promise<AppAbility> {
     // 创建能力构建器，用于定义权限规则
     const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility)
-    // 从数据库加载角色对应的权限规则
     const permissions = await this.permissionService.findByRoleId(user.roleId);
-    // 遍历权限规则，添加到能力构建器
     permissions.forEach(permission => {
       can(permission.action as Action, permission.subject as Subjects, permission.conditions as any || {})
     })

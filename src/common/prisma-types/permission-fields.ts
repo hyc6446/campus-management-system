@@ -35,7 +35,7 @@ const FULL_PERMISSION_FIELDS = {
 // 允许的查询筛选字段
 const PERMISSION_ALLOWED_FILTER_FIELDS = ['id', 'action', 'subject', 'roleId', 'createdAt'] as const
 // 允许的排序字段
-const PERMISSION_ALLOWED_SORT_FIELDS = ['id', 'createdAt'] as const
+const PERMISSION_ALLOWED_SORT_FIELDS = ['id', 'createdAt']
 
 export {
   PERMISSION_TABLE_FIELDS,
