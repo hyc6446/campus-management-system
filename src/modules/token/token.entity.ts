@@ -1,47 +1,12 @@
-// import { Exclude } from 'class-transformer';
 import { TokenType } from '@prisma/client';
-/**
- * Token实体类
- */
+
+
 export class Token {
-  /**
-   * Token的唯一标识符
-   */
   id!: number;
-
-  /**
-   * 关联的用户ID
-   */
   userId!: number;
-
-  /**
-   * Token字符串值
-   */
   token: string = '';
-
-  /**
-   * Token类型
-   */
   type: TokenType = TokenType.REFRESH;
-
-  /**
-   * Token过期时间
-   */
   expiresAt!: Date;
-
-  /**
-   * 是否已删除
-   */
-  deletedAt: Date | null = null;
-
-  /**
-   * Token创建时间
-   */
-  createdAt: Date = new Date();
-
-  /**
-   * Token更新时间
-   */
   updatedAt!: Date;
 
   constructor(partial: any = {}) {
@@ -50,8 +15,6 @@ export class Token {
     this.token= partial.token || ''
     this.type= partial.type || TokenType.REFRESH
     this.expiresAt= partial.expiresAt || new Date()
-    this.deletedAt= partial.deletedAt || null
-    this.createdAt= partial.createdAt || new Date()
     this.updatedAt= partial.updatedAt || new Date()
   }
 }

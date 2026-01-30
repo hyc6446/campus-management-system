@@ -1,6 +1,6 @@
 import { Controller, Inject, Logger } from '@nestjs/common';
 import { AppService } from './app.service';
-import { LoggerService } from '@core/logger/logger.service';
+import { PinoLogger } from 'nestjs-pino';
 
 @Controller()
 export class AppController {
@@ -8,6 +8,8 @@ export class AppController {
 
   constructor(
     private readonly appService: AppService,
-    @Inject(LoggerService) private readonly appLogger: LoggerService,
-  ) {}
+    @Inject(PinoLogger) private readonly appLogger: PinoLogger,
+  ) {
+    this.appLogger.setContext('AppController');
+  }
 }

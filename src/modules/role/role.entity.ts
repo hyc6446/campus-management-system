@@ -1,9 +1,9 @@
-// 角色实体类 - 与Prisma schema保持一致
 export class Role {
   id: number
   name: string
   createdAt: Date
   updatedAt: Date | null = null
+  
   // 构造函数初始化默认值
   constructor(partial: Partial<Role> = {}) {
     this.id = partial.id || 0

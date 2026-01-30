@@ -18,7 +18,6 @@ import { RedisModule } from '@core/redis/redis.module';
     UserModule,
     TokenModule,
     RedisModule,
-
     JwtModule.registerAsync({
       imports: [ConfigModule],
       // 注入ConfigService用于获取JWT配置

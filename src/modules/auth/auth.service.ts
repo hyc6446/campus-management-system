@@ -2,9 +2,13 @@ import { Injectable, HttpStatus } from '@nestjs/common';
 import { UserService } from '@app/modules/user/user.service';
 import { RoleService } from '@app/modules/role/role.service';
 import { AuthService as CoreAuthService } from '@app/core/auth/auth.service';
+import { RedisService } from '@core/redis/redis.service';
 import { LoginDto, RegisterDto } from '@app/modules/auth/dto';
 import { AppException } from '@app/common/exceptions/app.exception'
-
+import { AUTH_CACHE_KEY } from '@app/common/constants/auth.constants';
+import { ConfigService } from '@nestjs/config'
+import { PinoLogger } from 'nestjs-pino'
+import { AUTH_STREAM_KEY } from '@app/common/constants/redis.constants'
 
 @Injectable()
 export class AuthService {
@@ -12,6 +16,9 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly roleService: RoleService,
     private readonly coreAuthService: CoreAuthService,
+    private readonly redisService: RedisService,
+    private readonly configService: ConfigService,
+    private readonly logger: PinoLogger,
   ) {}
 
   /**
@@ -27,21 +34,28 @@ export class AuthService {
     }
     // 2.验证用户凭据
     const user = await this.coreAuthService.validateUser( loginDto.email, loginDto.password );
-
     if (!user) {
       throw new AppException('无效的邮箱或密码','UNAUTHORIZED',HttpStatus.UNAUTHORIZED);
     }
-    
     const { accessToken, refreshToken } = await this.coreAuthService.generateTokens(user);
     
+    // 3.缓存用户的refreshToken
+    try {
+      const expiresAt = new Date(Date.now() + this.configService.get('auth.jwtRefreshExpiresIn'));
+      await this.redisService.hset(AUTH_CACHE_KEY(user.id),'token',refreshToken);
+      await this.redisService.hset(AUTH_CACHE_KEY(user.id),'expiresAt',expiresAt.toISOString());
+      await this.redisService.expire(AUTH_CACHE_KEY(user.id), 7 * 24 * 60 * 60);
+    } catch (error) {
+      this.logger.warn('Redis缓存失败，但不影响登录:', error);
+    }
+
     // 返回用户信息(过滤敏感字段)
     const safeUser = await this.userService.getSafeUser(user);
-
-    return {
-      accessToken,
-      refreshToken,
-      user:safeUser,
-    };
+    
+    // 异步添加登录事件，不阻塞登录流程
+    this.redisService.xadd(AUTH_STREAM_KEY, '*', {event:'login',data:`用户 ${user.userName} 登录成功`});
+    
+    return { accessToken, refreshToken, user:safeUser };
   }
 
   /**
@@ -86,7 +100,6 @@ export class AuthService {
     //   const user: UserWithFields<UserSelect> = await this.coreAuthService.validateRefreshToken(refreshToken);
     //   // 3. 生成新的访问令牌
     //   const accessToken = await this.coreAuthService.generateTokens(user);
-    //   console.log('刷新访问令牌accessToken',accessToken);
     //   return accessToken;
     // } catch (error) {
     //   throw new UnauthorizedException('无效或过期的刷新令牌');

@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '@core/prisma/prisma.service';
-import { CreatePermissionDto, UpdatePermissionDto } from './dto/index';
-import * as pt from '@app/common/prisma-types';
-import { InputJsonValue } from '@prisma/client/runtime/library';
+import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
+import { PrismaService } from '@core/prisma/prisma.service'
+import { CreatePermissionDto, UpdatePermissionDto } from '@app/modules/permission/dto'
+import * as pt from '@app/common/prisma-types'
 
 @Injectable()
 export class PermissionRepository {
@@ -19,28 +18,22 @@ export class PermissionRepository {
    * @returns 权限对象或null
    */
   async findById(id: number): Promise<pt.DEFAULT_PERMISSION_TYPE | null> {
-    const permissionData = await this.prisma.permission.findUnique({
+    return await this.prisma.permission.findUnique({
       where: { id },
       select: pt.DEFAULT_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
   async findByIdWithSafe(id: number): Promise<pt.SAFE_PERMISSION_TYPE | null> {
-    const permissionData = await this.prisma.permission.findUnique({
+    return await this.prisma.permission.findUnique({
       where: { id },
       select: pt.SAFE_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
   async findByIdWithFull(id: number): Promise<pt.FULL_PERMISSION_TYPE | null> {
-    const permissionData = await this.prisma.permission.findUnique({
+    return await this.prisma.permission.findUnique({
       where: { id },
       select: pt.FULL_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
 
   /**
@@ -53,28 +46,22 @@ export class PermissionRepository {
    * @returns 权限对象或null
    */
   async findByAction(action: string): Promise<pt.DEFAULT_PERMISSION_TYPE[] | null> {
-    const permissionData = await this.prisma.permission.findMany({
+    return await this.prisma.permission.findMany({
       where: { action },
       select: pt.DEFAULT_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
   async findByActionWithSafe(action: string): Promise<pt.SAFE_PERMISSION_TYPE[] | null> {
-    const permissionData = await this.prisma.permission.findMany({
+    return await this.prisma.permission.findMany({
       where: { action },
       select: pt.SAFE_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
   async findByActionWithFull(action: string): Promise<pt.FULL_PERMISSION_TYPE[] | null> {
-    const permissionData = await this.prisma.permission.findMany({
+    return await this.prisma.permission.findMany({
       where: { action },
       select: pt.FULL_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
 
   /**
@@ -87,28 +74,22 @@ export class PermissionRepository {
    * @returns 权限对象或null
    */
   async findByRoleId(roleId: number): Promise<pt.DEFAULT_PERMISSION_TYPE[] | null> {
-    const permissionData = await this.prisma.permission.findMany({
+    return await this.prisma.permission.findMany({
       where: { roleId },
       select: pt.DEFAULT_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
   async findByRoleIdWithSafe(roleId: number): Promise<pt.SAFE_PERMISSION_TYPE[] | null> {
-    const permissionData = await this.prisma.permission.findMany({
+    return await this.prisma.permission.findMany({
       where: { roleId },
       select: pt.SAFE_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
   async findByRoleIdWithFull(roleId: number): Promise<pt.FULL_PERMISSION_TYPE[] | null> {
-    const permissionData = await this.prisma.permission.findMany({
+    return await this.prisma.permission.findMany({
       where: { roleId },
       select: pt.FULL_PERMISSION_FIELDS,
-    });
-    
-    return permissionData;
+    })
   }
 
   /**
@@ -117,68 +98,71 @@ export class PermissionRepository {
    * @returns 创建的权限
    */
   async create(permissionData: CreatePermissionDto): Promise<pt.SAFE_PERMISSION_TYPE> {
-    const createdPermission = await this.prisma.permission.create({
-      data: {
-        action: permissionData.action,
-        subject: permissionData.subject,
-        conditions: permissionData.conditions as InputJsonValue,
-        roleId: permissionData.roleId,
-        createdAt: permissionData.createdAt
-      },
-      select: pt.SAFE_PERMISSION_FIELDS
-    });
-    
-    // 将创建的权限数据转换为Permission实体类实例
-    return createdPermission;
+    return await this.prisma.permission.create({
+      data: permissionData,
+      select: pt.SAFE_PERMISSION_FIELDS,
+    })
   }
 
   /**
    * 更新权限
-   * @param id 权限ID   
+   * @param id 权限ID
    * @param updateData 更新数据
    * @returns 更新后的权限
    */
   async update(id: number, updateData: UpdatePermissionDto): Promise<pt.DEFAULT_PERMISSION_TYPE> {
-    const updatedPermission = await this.prisma.permission.update({
+    return await this.prisma.permission.update({
       where: { id },
-      data: {
-        action: updateData.action as string,
-        subject: updateData.subject as string,
-        conditions: updateData.conditions as InputJsonValue,
-        roleId: updateData.roleId as number
-      },
-      select: pt.DEFAULT_PERMISSION_FIELDS
-    });
-    
-    return updatedPermission;
-  }     
+      data: updateData,
+      select: pt.DEFAULT_PERMISSION_FIELDS,
+    })
+  }
 
   /**
    * 获取权限列表（分页）
    * @param page 页码
-   * @param limit 每页数量
+   * @param take 每页数量
    * @param skip 跳过数量
    * @param where 过滤条件
    * @param orderBy 排序条件
    * @returns 权限列表和总数
    */
-  async findAll(page:number, limit:number, skip:number, where: Prisma.PermissionWhereInput, orderBy: Prisma.PermissionOrderByWithRelationInput) {
+  async findAll(
+    page: number,
+    take: number,
+    skip: number,
+    where: Prisma.PermissionWhereInput,
+    orderBy: Prisma.PermissionOrderByWithRelationInput
+  ) {
     const [data, total] = await Promise.all([
-      this.prisma.permission.findMany({ where, skip, take: limit, orderBy }),
+      this.prisma.permission.findMany({ where, skip, take, orderBy }),
       this.prisma.permission.count({ where }),
-    ]);
+    ])
 
-    return { data, total, page, limit }; 
+    return { data, total, page, take }
   }
 
   /**
    * 删除权限
-   * @param id 权限ID   
+   * @param id 权限ID
    */
   async delete(id: number): Promise<boolean> {
-    // 1.检查操作者是否有删除权限
-    // 2.检查要删除的权限是否存在
-    const deletedPermission = await this.prisma.permission.delete({  where: { id }, });
-    return deletedPermission !== null;
+    const deletedPermission = await this.prisma.permission.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    })
+    return deletedPermission !== null
+  }
+
+  /**
+   * 恢复权限
+   * @param id 权限ID
+   */
+  async restore(id: number): Promise<boolean> {
+    const restoredPermission = await this.prisma.permission.update({
+      where: { id },
+      data: { deletedAt: null },
+    })
+    return restoredPermission !== null
   }
 }

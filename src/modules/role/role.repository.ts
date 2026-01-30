@@ -1,10 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '@core/prisma/prisma.service';
-import { Role } from './role.entity';
-import { CreateRoleDto, UpdateRoleDto } from './dto/index';
-import * as pt from '@app/common/prisma-types';
-
+import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
+import { PrismaService } from '@core/prisma/prisma.service'
+import { CreateRoleDto, UpdateRoleDto } from './dto/index'
+import * as pt from '@app/common/prisma-types'
 
 @Injectable()
 export class RoleRepository {
@@ -20,29 +18,23 @@ export class RoleRepository {
    * @returns 角色对象或null
    */
   async findById(id: number): Promise<pt.DEFAULT_ROLE_TYPE | null> {
-    const role = await this.prisma.role.findUnique({
+    return await this.prisma.role.findUnique({
       where: { id },
       select: pt.DEFAULT_ROLE_FIELDS,
-    });
-    
-    return role;
+    })
   }
 
   async findByIdWithSafe(id: number): Promise<pt.SAFE_ROLE_TYPE | null> {
-    const role = await this.prisma.role.findUnique({
+    return await this.prisma.role.findUnique({
       where: { id },
       select: pt.SAFE_ROLE_FIELDS,
-    });
-    
-    return role;
+    })
   }
   async findByIdWithFull(id: number): Promise<pt.FULL_ROLE_TYPE | null> {
-    const role = await this.prisma.role.findUnique({
+    return await this.prisma.role.findUnique({
       where: { id },
       select: pt.FULL_ROLE_FIELDS,
-    });
-    
-    return role;
+    })
   }
   /**
    * 通过名称查找角色
@@ -54,28 +46,24 @@ export class RoleRepository {
    * @returns 角色对象或null
    */
   async findByName(name: string): Promise<pt.DEFAULT_ROLE_TYPE | null> {
-    const role = await this.prisma.role.findUnique({
+    return await this.prisma.role.findUnique({
       where: { name },
       select: pt.DEFAULT_ROLE_FIELDS,
-    });
-    
-    return role;
+    })
   }
   async findByNameWithSafe(name: string): Promise<pt.SAFE_ROLE_TYPE | null> {
-    const role = await this.prisma.role.findUnique({
+    return await this.prisma.role.findUnique({
       where: { name },
       select: pt.SAFE_ROLE_FIELDS,
-    });
-    
-    return role;
+    })
+
   }
   async findByNameWithFull(name: string): Promise<pt.FULL_ROLE_TYPE | null> {
-    const role = await this.prisma.role.findUnique({
+    return await this.prisma.role.findUnique({
       where: { name },
       select: pt.FULL_ROLE_FIELDS,
-    });
-    
-    return role;
+    })
+
   }
   /**
    * 创建新角色
@@ -83,12 +71,10 @@ export class RoleRepository {
    * @returns 创建的角色
    */
   async create(roleData: CreateRoleDto): Promise<pt.SAFE_ROLE_TYPE> {
-    const createdRole = await this.prisma.role.create({
+    return await this.prisma.role.create({
       data: roleData,
       select: pt.SAFE_ROLE_FIELDS,
-    });
-    
-    return createdRole;
+    })
   }
 
   /**
@@ -98,56 +84,60 @@ export class RoleRepository {
    * @returns 更新后的角色
    */
   async update(id: number, updateData: UpdateRoleDto): Promise<pt.DEFAULT_ROLE_TYPE> {
-    const updatedRole = await this.prisma.role.update({
+    return await this.prisma.role.update({
       where: { id },
       data: updateData,
       select: pt.DEFAULT_ROLE_FIELDS,
-    });
-    
-    // 将更新后的角色数据转换为Role实体类实例
-    return updatedRole;
-  }     
+    })
+  }
 
   /**
    * 获取角色列表（分页）
    * @param page 页码
-   * @param limit 每页数量
+   * @param take 每页数量
    * @param skip 跳过数量
    * @param where 过滤条件
    * @param sortBy 排序字段, 多个字段用逗号分隔
    * @param order 排序方式, 多个顺序用逗号分隔
    * @returns 角色列表和总数
    */
-  async findAll(page:number, limit:number, skip:number, where: Prisma.RoleWhereInput, orderBy: Prisma.RoleOrderByWithRelationInput[]) {
+  async findAll(
+    page: number,
+    take: number,
+    skip: number,
+    where: Prisma.RoleWhereInput,
+    orderBy: Prisma.RoleOrderByWithRelationInput
+  ) {
     const [data, total] = await Promise.all([
-      this.prisma.role.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-      }),
+      this.prisma.role.findMany({ where, skip, take, orderBy }),
       this.prisma.role.count({ where }),
-    ]);
+    ])
 
-    return {
-      data,
-      page,
-      total,
-      limit,
-    };
+    return { data, page, total, take }
   }
 
   /**
    * 删除角色
-   * @param id 角色ID   
+   * @param id 角色ID
    */
   async delete(id: number): Promise<boolean> {
     const deleteRole = await this.prisma.role.update({
       where: { id },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-    return deleteRole.deletedAt !== null;
+      data: { deletedAt: new Date() },
+    })
+    return deleteRole.deletedAt !== null
+  }
+
+  /**
+   * 恢复角色
+   * @param id 角色ID
+   * @returns 恢复成功
+   */
+  async restore(id: number): Promise<boolean> {
+    const restoreRole = await this.prisma.role.update({
+      where: { id },
+      data: { deletedAt: null },
+    })
+    return restoreRole.deletedAt === null
   }
 }

@@ -1,18 +1,13 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { CaslService } from './casl.service';
-import { CHECK_PERMISSIONS_KEY } from '@common/decorators/permissions.decorator';
-import { Action, Subjects, AppAbility } from './casl.types';
+import { Injectable, CanActivate, ExecutionContext, HttpStatus } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import { CHECK_PERMISSIONS_KEY } from '@app/common/decorators/permissions.decorator'
+import { AppException } from '@app/common/exceptions/app.exception'
+import { CaslService } from './casl.service'
+import { Action, Subjects } from './casl.types'
 
-/**
- * 权限要求接口
- * 定义了访问特定资源所需的操作类型和资源类型
- */
 interface RequiredPermission {
-  /** 操作类型，如读取、创建、更新、删除等 */
-  action: Action;
-  /** 资源类型，如用户、课程、成绩等 */
-  subject: Subjects;
+  action: Action
+  subject: Subjects
 }
 
 /**
@@ -21,14 +16,9 @@ interface RequiredPermission {
  */
 @Injectable()
 export class CaslGuard implements CanActivate {
-  /**
-   * 构造函数
-   * @param reflector NestJS的Reflector服务，用于从元数据中提取权限信息
-   * @param caslService CASL权限服务，用于获取和检查用户权限
-   */
   constructor(
     private reflector: Reflector,
-    private caslService: CaslService,
+    private caslService: CaslService
   ) {}
 
   /**
@@ -41,35 +31,36 @@ export class CaslGuard implements CanActivate {
     // 从路由处理函数的元数据中提取权限要求
     const permissions = this.reflector.get<RequiredPermission[]>(
       CHECK_PERMISSIONS_KEY,
-      context.getHandler(),
-    );
+      context.getHandler()
+    )
 
     // 如果没有定义权限要求，直接放行
-    if (!permissions || permissions.length === 0) {
-      return true;
-    }
+    if (!permissions || permissions.length === 0) return true
 
     // 获取HTTP请求对象和当前用户（由认证守卫设置）
-    const request = context.switchToHttp().getRequest();
-    const user = request.user; // 由AuthGuard设置
-    
-    // 获取用户的能力对象，包含该用户的所有权限规则
-    const ability = await this.caslService.getAbility(user);
-    
-    // 检查所有要求的权限，确保用户具有所有必要的权限
-    for (const permission of permissions) {
-      const { action, subject } = permission;
-      
+    const request = context.switchToHttp().getRequest()
+    const user = request.user
+    console.log('user:', user)
+    try {
+      // 获取用户的能力对象，包含该用户的所有权限规则
+      const ability = await this.caslService.getAbility(user)
+      // 检查所有要求的权限，确保用户具有所有必要的权限
+      const hasAllPermissions = permissions.every(permission => {
+        return ability.can(permission.action, permission.subject)
+      })
       // 如果用户缺少任一权限，抛出禁止访问异常
-      if (!ability.can(action, subject)) {
-        throw new ForbiddenException(
-          `没有足够的权限执行操作: ${action} on ${subject}`,
-        );
+      if (!hasAllPermissions) {
+        throw new AppException(`没有足够的权限执行操作`, 'PERMISSION_DENIED', HttpStatus.FORBIDDEN)
       }
+    } catch (error) {
+      throw new AppException(
+        `权限检查失败`,
+        'PERMISSION_CHECK_FAILED',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
 
     // 用户具有所有必要权限，允许请求通过
-    return true;
+    return true
   }
 }
-

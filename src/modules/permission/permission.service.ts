@@ -104,12 +104,10 @@ export class PermissionService {
    */
   async findAll(query: QueryPermissionDto) {
     // 1.检查操作者是否有查询权限
-    const { page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', id, action, subject, roleId, createdAt } = query
-    const skip = (page - 1) * limit
-    if (limit > 100) {
-      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, {
-        limit,
-      })
+    const { page = 1, limit:take = 10, sortBy = 'createdAt', order = 'desc', id, action, subject, roleId, createdAt } = query
+    const skip = (page - 1) * take
+    if (take > 100) {
+      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, { take })
     }
     const where: Prisma.PermissionWhereInput = { deletedAt: null }
     if (id) where.id = id
@@ -117,9 +115,8 @@ export class PermissionService {
     if (subject) where.subject = subject
     if (roleId) where.roleId = roleId
     if (createdAt) where.createdAt = { equals: new Date(createdAt) }
-    const orderBy: Prisma.PermissionOrderByWithRelationInput = {}
-    if (sortBy && order)  orderBy[sortBy as keyof Prisma.PermissionOrderByWithRelationInput] = order as Prisma.SortOrder
-    return this.permissionRepository.findAll(page, limit, skip, where, orderBy)
+    const orderBy: Prisma.PermissionOrderByWithRelationInput = (sortBy && order) ? ({ [sortBy]: order}) : { createdAt: 'desc' }
+    return this.permissionRepository.findAll(page, take, skip, where, orderBy)
   }
 
   /**
@@ -139,5 +136,22 @@ export class PermissionService {
     }
 
     await this.permissionRepository.delete(id)
+  }
+
+  /**
+   * 恢复权限
+   * @param id 权限ID
+   * @throws ForbiddenException 无权限
+   */
+  async restore(id: number): Promise<boolean> {
+    // 1.检查操作者是否有操作权限
+    // 2.检查待恢复的权限是否存在
+    const permission = await this.findById(id)
+    // 只有管理员可以恢复权限
+    if (permission.id !== 1) {
+      throw new AppException('无权限恢复此权限', 'NO_PERMISSION', HttpStatus.FORBIDDEN, { id })
+    }
+
+    return await this.permissionRepository.restore(id)
   }
 }

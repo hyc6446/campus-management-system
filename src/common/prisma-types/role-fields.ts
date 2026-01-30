@@ -23,7 +23,7 @@ const FULL_ROLE_FIELDS = {
 // 允许的查询筛选字段
 const ROLE_ALLOWED_FILTER_FIELDS = [ "id", "name", "createdAt" ] as const;
 // 允许的排序字段
-const ROLE_ALLOWED_SORT_FIELDS = [ "id", "createdAt" ] as const;
+const ROLE_ALLOWED_SORT_FIELDS = [ "id", "createdAt" ];
 
 export {
   ROLE_TABLE_FIELDS,

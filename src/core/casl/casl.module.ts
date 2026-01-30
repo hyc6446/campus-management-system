@@ -1,8 +1,9 @@
-import { Module, Global, forwardRef } from '@nestjs/common';
-import { CaslService } from './casl.service';
-import { CaslFactory } from './casl.factory';
-import { AbilityFactory } from './ability.factory';
-import { PermissionModule } from '@modules/permission/permission.module';
+import { Module, Global, forwardRef } from '@nestjs/common'
+import { CaslService } from './casl.service'
+// import { CaslFactory } from './casl.factory'
+import { AbilityFactory } from './ability.factory'
+import { RedisModule } from '@app/core/redis/redis.module'
+import { PermissionModule } from '@app/modules/permission/permission.module'
 
 /**
  * CASL权限模块
@@ -12,17 +13,11 @@ import { PermissionModule } from '@modules/permission/permission.module';
 @Module({
   imports: [
     forwardRef(() => PermissionModule), // 导入权限模块，获取权限信息
+    RedisModule, // 导入Redis模块，用于缓存权限规则
   ],
   // 注册权限相关的服务提供者
-  providers: [
-    CaslService,     // 权限服务，提供权限检查功能
-    CaslFactory,     // CASL工厂，用于创建基于用户角色的权限规则
-    AbilityFactory,  // 能力工厂，用于创建空权限或自定义权限
-  ],
+  providers: [CaslService, AbilityFactory],
   // 导出供其他模块使用的服务
-  exports: [
-    CaslService,     // 导出主要的权限服务
-    AbilityFactory,  // 导出能力工厂，允许创建自定义权限
-  ],
+  exports: [CaslService, AbilityFactory],
 })
 export class CaslModule {}

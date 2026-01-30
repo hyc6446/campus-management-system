@@ -1,9 +1,10 @@
 import * as UserFields from './user-fields'
 import * as RoleFields from './role-fields'
 import * as PermissionFields from './permission-fields'
-// 由于 rule-config-fields 模块不存在，先注释掉相关导入，避免编译报错
 import * as RuleConfigFields from './ruleConfig-fields'
-import type { Prisma, User, Role, Permission, RuleConfig } from '@prisma/client'
+import * as TokenFields from './token-fields'
+
+import type { Prisma, User, Role, Permission, RuleConfig, Token } from '@prisma/client'
 
 
 // 使用单独的重新导出语句
@@ -11,6 +12,10 @@ export * from './user-fields'
 export * from './role-fields'
 export * from './permission-fields'
 export * from './ruleConfig-fields'
+export * from './token-fields'
+
+
+
 // 定义================ 基本用户 ===========类型
 export type DEFAULT_USER_TYPE = { [K in keyof typeof UserFields.DEFAULT_USER_FIELDS]: User[K] }
 export type SAFE_USER_TYPE = { [K in keyof typeof UserFields.SAFE_USER_FIELDS]: User[K] }
@@ -51,9 +56,19 @@ export type ALLOWED_RULE_CONFIG_FILTER_TYPE = (typeof RuleConfigFields.RULE_CONF
 // 规则配置排序字段
 export type ALLOWED_RULE_CONFIG_SORT_TYPE = (typeof RuleConfigFields.RULE_CONFIG_ALLOWED_SORT_FIELDS)[number]
 
+// 定义================ 基本令牌 ===========类型
+export type DEFAULT_TOKEN_TYPE = {[K in keyof typeof TokenFields.DEFAULT_TOKEN_FIELDS]: Token[K]}
+export type SAFE_TOKEN_TYPE = {[K in keyof typeof TokenFields.SAFE_TOKEN_FIELDS]: Token[K]}
+export type FULL_TOKEN_TYPE = {[K in keyof typeof TokenFields.FULL_TOKEN_FIELDS]: Token[K]}
+
+// 令牌过滤字段
+export type ALLOWED_TOKEN_FILTER_TYPE = (typeof TokenFields.TOKEN_ALLOWED_FILTER_FIELDS)[number]
+// 令牌排序字段
+export type ALLOWED_TOKEN_SORT_TYPE = (typeof TokenFields.TOKEN_ALLOWED_SORT_FIELDS)[number]
 
 
-// 定义================ 混合数据 ===========类型
+
+// 定义================ 混合字段数据 ===========类型
 // 用户默认-角色默认 类型
 export type USER_ROLE_DEFAULT_TYPE = DEFAULT_USER_TYPE & { role: DEFAULT_ROLE_TYPE }
 // 用户默认-角色安全 类型

@@ -1,6 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common'
+import { Injectable, CanActivate, ExecutionContext, HttpStatus } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { ROLES_KEY } from '@common/decorators/roles.decorator'
+import { AppException } from '@app/common/exceptions/app.exception';
+
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -15,20 +17,19 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest()
     const user = request.user
-    // console.log("RolesGuard.canActivate",user)
     if (!user) {
-      throw new ForbiddenException('用户未认证')
+      throw new AppException('用户未认证', 'USER_NOT_AUTHENTICATED', HttpStatus.UNAUTHORIZED)
     }
 
     if (!user.role) {
-      throw new ForbiddenException('用户角色信息缺失')
+      throw new AppException('用户角色信息缺失', 'USER_ROLE_MISSING', HttpStatus.NOT_FOUND)
     }
 
     // 检查用户角色是否在允许的角色列表中
     const hasRole = requiredRoles.some(role => role === user.role.name)
 
     if (!hasRole) {
-      throw new ForbiddenException('没有足够的角色权限')
+      throw new AppException('没有足够的角色权限', 'INSUFFICIENT_ROLES', HttpStatus.FORBIDDEN)
     }
 
     return true

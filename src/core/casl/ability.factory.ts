@@ -20,9 +20,6 @@ export class AbilityFactory {
    * 生成一个没有任何权限规则的能力对象，适用于匿名用户或未经身份验证的场景
    * 
    * @returns 无任何权限的能力对象
-   * @example
-   * const ability = abilityFactory.createForNull();
-   * // ability.can('read', 'Article') 会返回 false
    */
   createForNull(): AppAbility {
     const { build } = new AbilityBuilder<AppAbility>(createMongoAbility);
@@ -43,8 +40,6 @@ export class AbilityFactory {
    * const ability = abilityFactory.createForCustom(rules);
    */
 createForCustom(rules: Array<SubjectRawRule<Action, ExtractSubjectType<Subjects>, MongoQuery>>): AppAbility {
-    // 使用createMongoAbility工厂函数创建能力对象，传入自定义规则
-    // 这是CASL 6.7.3版本推荐的方式，替代了已弃用的Ability构造函数
     return createMongoAbility<[Action, Subjects]>(rules);
   }
 }

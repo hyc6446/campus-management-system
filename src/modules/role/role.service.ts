@@ -1,16 +1,13 @@
-import { Prisma } from '@prisma/client';
-import { Injectable,HttpStatus } from '@nestjs/common';
-import { RoleRepository } from './role.repository';
-import { Role } from './role.entity';
-import { CreateRoleDto, QueryRoleDto, UpdateRoleDto } from './dto/index';
-import * as pt from '@app/common/prisma-types';
-import { AppException } from '@app/common/exceptions/app.exception';
+import { Prisma } from '@prisma/client'
+import { Injectable, HttpStatus } from '@nestjs/common'
+import { RoleRepository } from './role.repository'
+import { CreateRoleDto, QueryRoleDto, UpdateRoleDto } from './dto/index'
+import * as pt from '@app/common/prisma-types'
+import { AppException } from '@app/common/exceptions/app.exception'
 
 @Injectable()
 export class RoleService {
-  constructor(
-    private roleRepository: RoleRepository
-  ) {}
+  constructor(private roleRepository: RoleRepository) {}
 
   /**
    * 通过ID查找用户
@@ -27,36 +24,36 @@ export class RoleService {
    * @throws NotFoundException 用户不存在
    */
   async findById(id: number): Promise<pt.DEFAULT_ROLE_TYPE> {
-    const role = await this.roleRepository.findById(id);
-    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} )
+    const role = await this.roleRepository.findById(id)
+    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
 
-    return role;
+    return role
   }
 
-  async findByIdWithSafe(id: number): Promise<pt.SAFE_ROLE_TYPE> {
-    const role = await this.roleRepository.findByIdWithSafe(id);
-    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} );
+  // async findByIdWithSafe(id: number): Promise<pt.SAFE_ROLE_TYPE> {
+  //   const role = await this.roleRepository.findByIdWithSafe(id);
+  //   if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} );
 
-    return role;
-  }
+  //   return role;
+  // }
 
-  async findByIdWithFull(id:number): Promise<pt.FULL_ROLE_TYPE>{
-    const role = await this.roleRepository.findByIdWithFull(id);
-    if(!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} );
+  async findByIdWithFull(id: number): Promise<pt.FULL_ROLE_TYPE> {
+    const role = await this.roleRepository.findByIdWithFull(id)
+    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
 
     return role
   }
 
   async findByIdOptional(id: number): Promise<pt.DEFAULT_ROLE_TYPE | null> {
-    return await this.roleRepository.findById(id);
+    return await this.roleRepository.findById(id)
   }
 
-  async findByIdWithSafeOptional(id: number): Promise<pt.SAFE_ROLE_TYPE | null> {
-    return await this.roleRepository.findByIdWithSafe(id);
-  }
+  // async findByIdWithSafeOptional(id: number): Promise<pt.SAFE_ROLE_TYPE | null> {
+  //   return await this.roleRepository.findByIdWithSafe(id);
+  // }
 
   async findByIdWithFullOptional(id: number): Promise<pt.FULL_ROLE_TYPE | null> {
-    return await this.roleRepository.findByIdWithFull(id);
+    return await this.roleRepository.findByIdWithFull(id)
   }
 
   /**
@@ -73,50 +70,53 @@ export class RoleService {
    * @returns 角色对象或null
    */
   async findByName(name: string): Promise<pt.DEFAULT_ROLE_TYPE> {
-    const role = await this.roleRepository.findByName(name);
-    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} )
+    const role = await this.roleRepository.findByName(name)
+    if (!role)
+      throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { name })
 
-    return role;
+    return role
   }
 
-  async findByNameWithSafe(name: string): Promise<pt.SAFE_ROLE_TYPE> {
-    const role = await this.roleRepository.findByNameWithSafe(name);
-    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} );
+  // async findByNameWithSafe(name: string): Promise<pt.SAFE_ROLE_TYPE> {
+  //   const role = await this.roleRepository.findByNameWithSafe(name);
+  //   if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} );
 
-    return role;
-  }
+  //   return role;
+  // }
 
-  async findByNameWithFull(name: string): Promise<pt.FULL_ROLE_TYPE> {
-    const role = await this.roleRepository.findByNameWithFull(name);
-    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} );
+  // async findByNameWithFull(name: string): Promise<pt.FULL_ROLE_TYPE> {
+  //   const role = await this.roleRepository.findByNameWithFull(name);
+  //   if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{name} );
 
-    return role;
-  }
+  //   return role;
+  // }
 
   async findByNameOptional(name: string): Promise<pt.DEFAULT_ROLE_TYPE | null> {
-    return await this.roleRepository.findByName(name);
+    return await this.roleRepository.findByName(name)
   }
 
-  async findByNameWithSafeOptional(name: string): Promise<pt.SAFE_ROLE_TYPE | null> {
-    return await this.roleRepository.findByNameWithSafe(name);
-  }
+  // async findByNameWithSafeOptional(name: string): Promise<pt.SAFE_ROLE_TYPE | null> {
+  //   return await this.roleRepository.findByNameWithSafe(name);
+  // }
 
-  async findByNameWithFullOptional(name: string): Promise<pt.FULL_ROLE_TYPE | null> {
-    return await this.roleRepository.findByNameWithFull(name);
-  }
+  // async findByNameWithFullOptional(name: string): Promise<pt.FULL_ROLE_TYPE | null> {
+  //   return await this.roleRepository.findByNameWithFull(name);
+  // }
 
   /**
    * 创建新角色
-   * @param createRoleDto 角色数据
+   * @param createData 角色数据
    * @returns 创建的角色
    */
-  async create(createRoleDto: CreateRoleDto): Promise<pt.SAFE_ROLE_TYPE> {
+  async create(createData: CreateRoleDto): Promise<pt.SAFE_ROLE_TYPE> {
     // 检查角色名称是否已存在
-    const role = await this.roleRepository.findByName(createRoleDto.name);
-    if (role) throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT,{ roleName: role.name } );  
-
-    createRoleDto.name = createRoleDto.name.toUpperCase();
-    return await this.roleRepository.create(createRoleDto);
+    const role = await this.roleRepository.findByName(createData.name)
+    if (role) {
+      throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT, {
+        roleName: role.name,
+      })
+    }
+    return await this.roleRepository.create(createData)
   }
 
   /**
@@ -128,89 +128,92 @@ export class RoleService {
    * @throws ForbiddenException 无权限
    * @throws BadRequestException 无效操作
    */
-  async update(id: number, updateRoleDto: UpdateRoleDto, currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE ): Promise<pt.DEFAULT_ROLE_TYPE> {
-
+  async update(id: number, updateData: UpdateRoleDto): Promise<pt.DEFAULT_ROLE_TYPE> {
     // 权限检查，当前操作人是否为管理员
-    if(currentUser.role.name !== 'ADMIN') {
-      throw new AppException('无权限修改角色', 'FORBIDDEN_UPDATE_ROLE', HttpStatus.FORBIDDEN,{ operator: currentUser.role.name } );  
-    }
-
     // 检查待更新的角色是否存在
-    const role = await this.roleRepository.findByIdWithSafe(id);
-    if(!role) {
-      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{ id } );  
+    const role = await this.roleRepository.findByIdWithSafe(id)
+    if (!role) {
+      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
     }
     // 检查待更新的角色名称是否已经存在
-    const roleNameExist = await this.roleRepository.findByName(updateRoleDto.name);
-    if(roleNameExist) {
-      throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT,{ roleName: roleNameExist.name } );  
+    const roleNameExist = await this.roleRepository.findByName(updateData.name)
+    if (roleNameExist) {
+      throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT, {
+        roleName: roleNameExist.name,
+      })
     }
 
-    updateRoleDto.name = updateRoleDto.name.toUpperCase();
-    const updateRole = await this.roleRepository.update(id, updateRoleDto);
-    return updateRole;
+    return await this.roleRepository.update(id, updateData)
   }
 
   /**
    * 获取分页角色列表
-   * @param page 页码
-   * @param limit 每页数量
-   * @param sort 排序参数
+   * @param query 查询参数
    * @param currentUser 当前操作用户
    * @returns 分页结果
    */
-  async findAll(query: QueryRoleDto,currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE) {
-    // const permission = this.authService.checkPermission(currentUser, 'ROLE', 'QUERY');
-    // 权限检查
-    if(currentUser.role.name !== 'ADMIN') {
-      throw new AppException('无权限查询角色', 'FORBIDDEN_QUERY_ROLE', HttpStatus.FORBIDDEN,{operator: currentUser.role.name} )
-    }
-    const { page=1, limit=10, sortBy='createdAt', order='desc', id, name, createdAt } = query;
-    const skip = (page - 1) * limit;
-    if(limit > 100) {
-      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST,{limit} )
+  async findAll(query: QueryRoleDto) {
+    const {
+      page = 1,
+      limit: take = 10,
+      sortBy = 'createdAt',
+      order = 'desc',
+      id,
+      name,
+      createdAt,
+    } = query
+    const skip = (page - 1) * take
+    if (take > 100) {
+      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, {
+        take,
+      })
     }
     const where: Prisma.RoleWhereInput = { deletedAt: null }
-    if(id) where.id=id;
-    if(name) where.name={contains: name, mode: Prisma.QueryMode.insensitive};
-    if(createdAt) where.createdAt={equals: new Date(createdAt)};
-    const orderBy: Prisma.RoleOrderByWithRelationInput[] = []
-    if(sortBy && order) {
-      const sortKeys = sortBy.split(',');
-      const sortOrders = order.split(',');
-      sortKeys.forEach((key,index) => {
-        const validOrder = sortOrders[index];
-        orderBy.push({
-          [key as keyof Prisma.RoleOrderByWithRelationInput]: validOrder as Prisma.SortOrder
-        });
-      })
-    }else{
-      orderBy.push({createdAt:'desc'});
-    }
-    return this.roleRepository.findAll(page, limit,skip, where, orderBy);
+    if (id) where.id = id
+    if (name) where.name = { contains: name, mode: Prisma.QueryMode.insensitive }
+    if (createdAt) where.createdAt = { equals: new Date(createdAt) }
+    const orderBy: Prisma.RoleOrderByWithRelationInput =
+      sortBy && order ? { [sortBy]: order } : { createdAt: 'desc' }
+    return this.roleRepository.findAll(page, take, skip, where, orderBy)
   }
 
   /**
-   * 删除角色
+   * 停用角色
    * @param id 角色ID
    * @param currentUser 当前用户
    * @throws ForbiddenException 无权限
    */
-  async delete(id: number, currentUser: pt.USER_SAFE_ROLE_DEFAULT_TYPE): Promise<boolean> {
+  async delete(id: number): Promise<boolean> {
     // 权限检查，当前操作人是否为管理员
-    if(currentUser.role.name !== 'ADMIN') {
-      throw new AppException('无权限删除角色', 'FORBIDDEN_DELETE_ROLE', HttpStatus.FORBIDDEN,{operator: currentUser.role.name} )
-    }
     // 检查待更新的角色是否存在
-    const role = await this.roleRepository.findByIdWithFull(id);
-    if(!role) {
-      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND,{id} )
+    const role = await this.roleRepository.findByIdWithFull(id)
+    if (!role) {
+      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
     }
-    if(role.deletedAt) {
-      throw new AppException('该角色已停用', 'ROLE_ALREADY_DELETED', HttpStatus.BAD_REQUEST,{id} )
+    if (role.deletedAt) {
+      throw new AppException('该角色已停用', 'ROLE_ALREADY_DELETED', HttpStatus.BAD_REQUEST, { id })
     }
-    const deleteRole = await this.roleRepository.delete(id);
-    return deleteRole;
+    return await this.roleRepository.delete(id)
   }
 
+  /**
+   * 恢复角色
+   * @param id 角色ID
+   *
+   * @throws ForbiddenException 无权限
+   * @throws BadRequestException 角色未停用
+   * @throws NotFoundException 角色不存在
+   */
+  async restore(id: number): Promise<boolean> {
+    // 权限检查，当前操作人是否为管理员
+    // 检查待更新的角色是否存在
+    const role = await this.roleRepository.findByIdWithFull(id)
+    if (!role) {
+      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
+    }
+    if (!role.deletedAt) {
+      throw new AppException('该角色未停用', 'ROLE_NOT_DELETED', HttpStatus.BAD_REQUEST, { id })
+    }
+    return await this.roleRepository.restore(id)
+  }
 }

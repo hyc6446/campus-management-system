@@ -1,13 +1,7 @@
-/**
- * PrismaService - 数据库服务类
- * 
- * 扩展了PrismaClient，提供数据库连接管理、生命周期钩子和辅助方法
- * 实现了OnModuleInit接口，确保模块初始化时连接数据库
- */
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { config } from 'dotenv';
-
+import { PinoLogger } from 'nestjs-pino';
 // 加载环境变量
 config();
 
@@ -22,7 +16,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
    * 构造函数 - 初始化PrismaClient
    * 根据环境变量配置日志级别和数据源
    */
-  constructor() {
+  constructor(
+    private readonly logger: PinoLogger,
+  ) {
     super({
       datasources: {
         db: {
@@ -69,14 +65,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     for (const signal of shutdownSignals) {
       process.on(signal, async () => {
         try {
-          console.log(`接收到${signal}信号，正在关闭应用...`);
+          this.logger.info(`接收到${signal}信号，正在关闭应用...`);
           // 先关闭Prisma连接
           await this.$disconnect();
           // 再关闭NestJS应用
           await app.close();
           process.exit(0);
         } catch (error) {
-          console.error('关闭应用时出错:', error);
+          this.logger.error('关闭应用时出错:', error);
           process.exit(1);
         }
       });

@@ -1,12 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { TokenType } from '@prisma/client';
 import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
+import { RedisService } from '@core/redis/redis.service';
 import { TokenPayload } from './jwt.strategy';
 import * as pt from '@app/common/prisma-types'
+import { AppException } from '@app/common/exceptions/app.exception';
+import { AUTH_CACHE_KEY } from '@app/common/constants/auth.constants';
 
 /**
  * 认证服务类
@@ -28,6 +31,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
+    private readonly redisService: RedisService,
   ) {}
 
   /**
@@ -47,27 +51,28 @@ export class AuthService {
       email: user.email, // 用户邮箱，用于身份标识
       role: user.role.name,   // 用户角色，用于权限控制
     };
-    
+    const auth = this.configService.get('auth')
     // 并行生成访问令牌和刷新令牌，提高性能
     const [accessToken, refreshToken] = await Promise.all([
       // 生成访问令牌，使用JWT密钥并设置较短的过期时间
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get('auth.jwtSecret'),
-        expiresIn: this.configService.get('auth.jwtExpiresIn'),
+        secret: auth.jwtSecret,
+        expiresIn: auth.jwtExpiresIn,
       }),
       // 生成刷新令牌，使用专门的刷新令牌密钥并设置较长的过期时间
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get('auth.jwtRefreshSecret'),
-        expiresIn: this.configService.get('auth.jwtRefreshExpiresIn'),
+        secret: auth.jwtRefreshSecret,
+        expiresIn: auth.jwtRefreshExpiresIn,
       }),
     ]);
 
     // 将刷新令牌保存到数据库，用于后续的令牌验证和吊销
-    const refreshTokenEntity = await this.tokenService.createRefreshToken(
-      user.id,
-      refreshToken,
-      new Date(Date.now() + parseInt(this.configService.get('auth.jwtRefreshExpiresIn') as string)),
-    );
+    const refreshTokenEntity = await this.tokenService.create({
+      userId: user.id,
+      token: refreshToken,
+      type: TokenType.REFRESH,
+      expiresAt: new Date(Date.now() + parseInt(auth.jwtRefreshExpiresIn as string)),
+    });
     // 返回生成的两个令牌
     return {
       accessToken,
@@ -88,48 +93,48 @@ export class AuthService {
    * @returns 验证成功返回用户对象，失败返回null
    */
   async validateUser(email: string, password: string):  Promise<pt.USER_FULL_ROLE_DEFAULT_TYPE | null> {
-    // 根据邮箱查找用户
+    // 1.根据邮箱查找用户
     const user = await this.userService.findByEmailFullForLogin(email);
-    // 检查用户是否存在且状态为激活
+    // 2.检查用户是否存在
     if (!user || user.deletedAt){
-      throw new UnauthorizedException('用户不存在或已被停用');
+      throw new AppException('用户不存在','USER_NOT_FOUND',HttpStatus.NOT_FOUND);
     };
-    
-    // 检查用户是否被锁定
+    // 3.检查用户状态是否为激活
+    if (user.deletedAt) {
+      throw new AppException('用户状态异常','USER_STATUS_ERROR',HttpStatus.GONE);
+    }
+    // 4.检查用户是否被锁定
     if (user.lockUntil && user.lockUntil > new Date()) {
-      throw new UnauthorizedException('该账号已被锁定');
+      throw new AppException('该账号已被锁定','USER_LOCKED',HttpStatus.LOCKED);
     }
     
-    // 如果账户曾经被锁定但现在已经过期，自动解锁
+    // 5.如果账户曾经被锁定但现在已经过期，自动解锁
     if (user.lockUntil && user.lockUntil <= new Date()) {
       await this.userService.resetFailedLoginAttempts(user.id);
     }
     
-    // 使用bcrypt比较明文密码与存储的哈希密码是否匹配
+    // 6.使用bcrypt比较明文密码与存储的哈希密码是否匹配
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      // 增加失败登录尝试次数
+      // 6.1增加失败登录尝试次数
       const failUser = await this.userService.incrementFailedLoginAttempts(user.id);
       if (!failUser)  return null;
       
-      // 检查更新后的用户是否超过最大失败尝试次数，若超过则锁定用户
+      // 6.2检查更新后的用户是否超过最大失败尝试次数，若超过则锁定用户
       if (failUser && failUser.failedLoginAttempts >= this.configService.get('auth.maxLoginAttempts')) {
         await this.userService.lockUser(failUser.id);
-        throw new UnauthorizedException('该账号已被锁定');
+        throw new AppException('该账号已被锁定','USER_LOCKED',HttpStatus.LOCKED);
       }
       
-      // 密码验证失败，返回null
       return null;
     }
     
-    // 密码验证成功，重置失败登录尝试次数
+    // 7.密码验证成功，重置失败登录尝试次数
     if (user.failedLoginAttempts > 0 || user.lockUntil) {
       await this.userService.resetFailedLoginAttempts(user.id);
     }
-    // console.log("AuthService.validateUser",email,password)
     
-    // 验证成功，返回用户对象
     return user;
   }
 
@@ -145,23 +150,23 @@ export class AuthService {
    * @throws UnauthorizedException 当令牌无效或用户不存在时抛出
    */
   async validateRefreshToken(refreshToken: string,) {
-    // 解析刷新令牌载荷
+    // 1.解析刷新令牌载荷
     const payload = await this.parseRefreshTokenPayload(refreshToken);
-    console.log('刷新令牌payload',payload);
 
-    // 根据用户ID查找用户
+    // 2.根据用户ID查找用户
     const user = await this.userService.findById(Number(payload.sub));
     
-    // 检查用户是否存在
+    // 3.检查用户是否存在
     if (!user) {
-      throw new UnauthorizedException('无效的用户');
+      throw new AppException('无效的用户','INVALID_USER',HttpStatus.NOT_FOUND);
     }
-    const token = await this.tokenService.findByUserIdAndType(user.id, TokenType.REFRESH);
-    // 验证刷新令牌是否与数据库中存储的一致
-    if (token?.token !== refreshToken) {
-      throw new UnauthorizedException('无效的刷新令牌');
+
+    // 4.检查缓存中是否存在该Token
+    const cacheToken = await this.redisService.hget(AUTH_CACHE_KEY(user.id), 'token');
+    if (cacheToken !== refreshToken) {
+      throw new AppException('无效的刷新令牌','INVALID_REFRESH_TOKEN',HttpStatus.UNAUTHORIZED);
     }
-    // 返回用户对象（Token表的验证逻辑已在其他地方处理）
+
     return user;
   }
 
@@ -199,7 +204,7 @@ export class AuthService {
       ) as TokenPayload;
 
     } catch (error) {
-      throw new UnauthorizedException('无效或过期的刷新令牌');
+      throw new AppException('无效或过期的刷新令牌','INVALID_REFRESH_TOKEN',HttpStatus.UNAUTHORIZED);
     }
   }
 
@@ -211,8 +216,8 @@ export class AuthService {
    * 
    * @param userId 用户ID
    */
-  async logout(userId: number): Promise<void> {
+  async logout(userId: number): Promise<boolean> {
     // 将用户的刷新令牌设置为null，表示令牌已被吊销
-    await this.tokenService.deleteByUserIdAndType(userId, TokenType.REFRESH);
+    return await this.tokenService.logout(userId);
   }
 }

@@ -1,20 +1,6 @@
 // 统一导出所有DTO类、Schema和类型
-import { CreateUserSchema, CreateUserDtoSwagger, type CreateUserDto } from './create-user.dto';
-import { UpdateUserSchema, UpdateUserDtoSwagger, type UpdateUserDto } from './update-user.dto';
-import { UserProfileSchema, UserProfileDtoSwagger, type UserProfileDto } from './user-profile.dto';
+import { CreateUserDto, type CreateUserType } from './create-user.dto'
+import { UpdateUserDto, type UpdateUserType } from './update-user.dto'
+import { QueryUserDto, type QueryUserType } from './query-user.dto'
 
-
-export {
-  // Swagger类
-  CreateUserDtoSwagger,
-  UpdateUserDtoSwagger,
-  UserProfileDtoSwagger,
-  // Schema
-  CreateUserSchema,
-  UpdateUserSchema,
-  UserProfileSchema,
-  // 类型
-  CreateUserDto,
-  UpdateUserDto,
-  UserProfileDto,
-};
+export { CreateUserDto, UpdateUserDto, QueryUserDto }

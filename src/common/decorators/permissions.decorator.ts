@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { Action, Subjects } from '@core/casl/casl.types';
+import { Action, Subjects } from '@app/core/casl/casl.types';
 
 export interface RequiredPermission {
   action: Action;

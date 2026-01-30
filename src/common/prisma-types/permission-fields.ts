@@ -17,7 +17,6 @@ const DEFAULT_PERMISSION_FIELDS = {
   id: true,
   action: true,
   subject: true,
-  conditions: true,
   roleId: true,
 } satisfies Prisma.PermissionSelect
 

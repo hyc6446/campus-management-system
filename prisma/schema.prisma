@@ -76,8 +76,6 @@ model Permission {
   action     String    @map("action")
   // 操作对象：如User、Student、Course等资源
   subject    String    @map("subject")
-  // 权限条件：用于细粒度权限控制的JSON格式条件
-  conditions Json?     @map("conditions")
   // 外键：关联到角色表
   roleId     Int       @map("role_id")
   // 多对一：权限属于一个角色

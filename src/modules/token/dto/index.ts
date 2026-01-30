@@ -1,19 +1,7 @@
 // 统一导出所有DTO类、Schema和类型
 
-import { ValidateTokenDtoSwagger, ValidateTokenSchema, type ValidateTokenDto } from './validate-token.dto';
-import { UpdateTokenDtoSwagger, UpdateTokenSchema, type UpdateTokenDto } from './update-token.dto';
-import { CreateTokenDtoSwagger, CreateTokenSchema, type CreateTokenDto } from './create-token.dto';
-export {
-  // Swagger类
-  ValidateTokenDtoSwagger,
-  UpdateTokenDtoSwagger,
-  CreateTokenDtoSwagger,
-  // Schema
-  ValidateTokenSchema,      
-  UpdateTokenSchema,
-  CreateTokenSchema,
-  // 类型
-  ValidateTokenDto,
-  UpdateTokenDto,
-  CreateTokenDto,
-};
+// import { ValidateTokenDto, type ValidateTokenType } from './validate-token.dto'
+import { QueryTokenDto, type QueryTokenType } from './query-token.dto'
+import { CreateTokenDto, type CreateTokenType } from './create-token.dto'
+
+export { QueryTokenDto, CreateTokenDto }

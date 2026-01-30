@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
 
 export const LoginSchema = z.object({
-  email: z.email('必须是有效的邮箱地址').describe('邮箱'),
-  password: z.string('密码不可为空').min(6, '密码至少6个字符').describe('密码'),
+  email: z.email('必须是有效的邮箱地址').default('teacher@campus.com').describe('邮箱'),
+  password: z.string('密码不可为空').min(6, '密码至少6个字符').default('teacher123').describe('密码'),
 });
 
 
