@@ -40,7 +40,6 @@ export class CaslGuard implements CanActivate {
     // 获取HTTP请求对象和当前用户（由认证守卫设置）
     const request = context.switchToHttp().getRequest()
     const user = request.user
-    console.log('user:', user)
     try {
       // 获取用户的能力对象，包含该用户的所有权限规则
       const ability = await this.caslService.getAbility(user)
@@ -53,11 +52,7 @@ export class CaslGuard implements CanActivate {
         throw new AppException(`没有足够的权限执行操作`, 'PERMISSION_DENIED', HttpStatus.FORBIDDEN)
       }
     } catch (error) {
-      throw new AppException(
-        `权限检查失败`,
-        'PERMISSION_CHECK_FAILED',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      throw new AppException(`权限检查失败`, 'PERMISSION_CHECK_FAILED', HttpStatus.FORBIDDEN)
     }
 
     // 用户具有所有必要权限，允许请求通过

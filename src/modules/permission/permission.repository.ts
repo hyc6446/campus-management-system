@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '@core/prisma/prisma.service'
-import { CreatePermissionDto, UpdatePermissionDto } from '@app/modules/permission/dto'
+import { CreateDto, UpdateDto } from '@app/modules/permission/dto'
 import * as pt from '@app/common/prisma-types'
 
 @Injectable()
@@ -10,10 +10,6 @@ export class PermissionRepository {
 
   /**
    * 通过ID查找权限,
-   * 区分为
-   * --包含默认字段 findById
-   * --包含安全字段 findByIdWithSafe
-   * --包含完整字段 findByIdWithFull
    * @param id 权限ID
    * @returns 权限对象或null
    */
@@ -38,10 +34,6 @@ export class PermissionRepository {
 
   /**
    * 通过action查找权限,
-   * 区分为
-   * --包含默认字段 findByAction
-   * --包含安全字段 findByActionWithSafe
-   * --包含完整字段 findByActionWithFull
    * @param action 权限操作类型
    * @returns 权限对象或null
    */
@@ -66,10 +58,6 @@ export class PermissionRepository {
 
   /**
    * 通过RoleId查找权限
-   * 区分为
-   * --包含默认字段 findByRoleId
-   * --包含安全字段 findByRoleIdWithSafe
-   * --包含完整字段 findByRoleIdWithFull
    * @param roleId 角色ID
    * @returns 权限对象或null
    */
@@ -79,16 +67,18 @@ export class PermissionRepository {
       select: pt.DEFAULT_PERMISSION_FIELDS,
     })
   }
-  async findByRoleIdWithSafe(roleId: number): Promise<pt.SAFE_PERMISSION_TYPE[] | null> {
-    return await this.prisma.permission.findMany({
-      where: { roleId },
-      select: pt.SAFE_PERMISSION_FIELDS,
-    })
-  }
-  async findByRoleIdWithFull(roleId: number): Promise<pt.FULL_PERMISSION_TYPE[] | null> {
-    return await this.prisma.permission.findMany({
-      where: { roleId },
-      select: pt.FULL_PERMISSION_FIELDS,
+  // 通过action,subject,roleId查找权限,
+  async findByActionSubjectRole(
+    action: string,
+    subject: string,
+    roleId: number
+  ): Promise<pt.DEFAULT_PERMISSION_TYPE | null> {
+    return await this.prisma.permission.findUnique({
+      where: {
+        permission_action_subject_role_unique: { action, subject, roleId },
+        deletedAt: null,
+      },
+      select: pt.DEFAULT_PERMISSION_FIELDS,
     })
   }
 
@@ -97,9 +87,9 @@ export class PermissionRepository {
    * @param permissionData 权限数据
    * @returns 创建的权限
    */
-  async create(permissionData: CreatePermissionDto): Promise<pt.SAFE_PERMISSION_TYPE> {
+  async create(data: CreateDto): Promise<pt.SAFE_PERMISSION_TYPE> {
     return await this.prisma.permission.create({
-      data: permissionData,
+      data,
       select: pt.SAFE_PERMISSION_FIELDS,
     })
   }
@@ -110,10 +100,10 @@ export class PermissionRepository {
    * @param updateData 更新数据
    * @returns 更新后的权限
    */
-  async update(id: number, updateData: UpdatePermissionDto): Promise<pt.DEFAULT_PERMISSION_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_PERMISSION_TYPE> {
     return await this.prisma.permission.update({
       where: { id },
-      data: updateData,
+      data,
       select: pt.DEFAULT_PERMISSION_FIELDS,
     })
   }
@@ -133,9 +123,15 @@ export class PermissionRepository {
     skip: number,
     where: Prisma.PermissionWhereInput,
     orderBy: Prisma.PermissionOrderByWithRelationInput
-  ) {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_PERMISSION_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.permission.findMany({ where, skip, take, orderBy }),
+      this.prisma.permission.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: pt.DEFAULT_PERMISSION_FIELDS,
+      }),
       this.prisma.permission.count({ where }),
     ])
 

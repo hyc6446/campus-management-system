@@ -1,7 +1,7 @@
 export class ResponseUtil {
-  static success<T>(data?: T, message: string = '操作成功'): ResponseDto<T> {
+  static success<T>(data?: T, code: number = 200, message: string = '操作成功'): ResponseDto<T> {
     return {
-      code: 200,
+      code,
       success: true,
       message,
       data: data ?? null,

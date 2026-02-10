@@ -20,6 +20,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<Response>()
     const request = ctx.getRequest<Request>()
+    console.log('exception errors:', exception.message)
 
     // 设置默认错误状态码和消息
     let status = HttpStatus.INTERNAL_SERVER_ERROR
@@ -54,6 +55,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
           message = '数据库操作失败'
           details = { prismaError: exception.code }
       }
+    } else if (exception.name === 'AppException') {
+      status = exception.status || HttpStatus.BAD_REQUEST
+      errorCode = exception.errorCode || 'APP_EXCEPTION'
+      message = exception.message || '应用程序异常'
+      details = exception.details || null
+    } else if (exception.name === 'ZodValidationException') {
+      status = exception.status || HttpStatus.BAD_REQUEST
+      errorCode = exception.errorCode || 'ZOD_VALIDATION_ERROR'
+      message = exception.message || 'Zod验证失败'
+      details = exception.details || null
     } else {
       // 处理其他未知错误
       details = {
@@ -78,7 +89,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
     }
-
     // 设置响应
     response.status(status).json(errorResponse)
   }

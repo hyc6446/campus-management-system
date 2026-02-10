@@ -12,7 +12,6 @@ export function setupSwagger(app: INestApplication, configService: ConfigService
     .setTitle(swaggerConfig.title)
     .setDescription(swaggerConfig.description)
     .setVersion(swaggerConfig.version)
-    .addTag('Health', 'Health check endpoints')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',

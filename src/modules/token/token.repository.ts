@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@core/prisma/prisma.service'
 import { Prisma, TokenType } from '@prisma/client'
 import * as pt from '@app/common/prisma-types'
-import { CreateTokenDto } from './dto'
+import { CreateDto } from './dto'
 
 @Injectable()
 export class TokenRepository {
@@ -52,7 +52,7 @@ export class TokenRepository {
    * @param includeUser 是否包含用户信息
    * @returns 创建的Token
    */
-  async create(tokenData: CreateTokenDto): Promise<pt.DEFAULT_TOKEN_TYPE> {
+  async create(tokenData: CreateDto): Promise<pt.DEFAULT_TOKEN_TYPE> {
     return await this.prisma.token.create({
       data: tokenData,
       select: pt.DEFAULT_TOKEN_FIELDS,

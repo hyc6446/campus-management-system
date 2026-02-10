@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '@core/prisma/prisma.service'
-import { CreateUserDto, UpdateUserDto } from './dto/index'
+import { CreateDto, UpdateDto } from './dto/index'
 import type { Prisma, User } from '@prisma/client'
 
 import * as pt from '@app/common/prisma-types'
@@ -17,10 +17,15 @@ export class UserRepository {
    * @param id 用户ID
    * @returns 用户对象或null
    */
-  async findById(id: number): Promise<pt.SAFE_USER_TYPE | null> {
+  async findById(id: number): Promise<pt.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
     return await this.prisma.user.findUnique({
       where: { id },
-      select: pt.SAFE_USER_FIELDS,
+      select: {
+        ...pt.SAFE_USER_FIELDS,
+        role: {
+          select: pt.DEFAULT_ROLE_FIELDS,
+        },
+      },
     })
   }
   /**
@@ -79,9 +84,9 @@ export class UserRepository {
    * @param userData 用户数据
    * @returns 创建的用户
    */
-  async create(userData: CreateUserDto): Promise<pt.SAFE_USER_TYPE> {
+  async create(data: CreateDto): Promise<pt.SAFE_USER_TYPE> {
     return await this.prisma.user.create({
-      data: userData,
+      data,
       select: {
         ...pt.SAFE_USER_FIELDS,
         role: {
@@ -97,10 +102,10 @@ export class UserRepository {
    * @param updateData 更新数据
    * @returns 更新后的用户
    */
-  async update(id: number, updateData: UpdateUserDto): Promise<pt.SAFE_USER_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.SAFE_USER_TYPE> {
     return await this.prisma.user.update({
       where: { id },
-      data: updateData,
+      data,
       select: {
         ...pt.SAFE_USER_FIELDS,
         role: {

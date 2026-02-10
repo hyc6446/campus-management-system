@@ -1,14 +1,15 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { UserService } from '@app/modules/user/user.service';
-import { RoleService } from '@app/modules/role/role.service';
-import { AuthService as CoreAuthService } from '@app/core/auth/auth.service';
-import { RedisService } from '@core/redis/redis.service';
-import { LoginDto, RegisterDto } from '@app/modules/auth/dto';
-import { AppException } from '@app/common/exceptions/app.exception'
-import { AUTH_CACHE_KEY } from '@app/common/constants/auth.constants';
-import { ConfigService } from '@nestjs/config'
 import { PinoLogger } from 'nestjs-pino'
+import { Injectable, HttpStatus } from '@nestjs/common'
+import { UserService } from '@app/modules/user/user.service'
+import { RoleService } from '@app/modules/role/role.service'
+import { AuthService as CoreAuthService } from '@app/core/auth/auth.service'
+import { RedisService } from '@core/redis/redis.service'
+import { LoginDto, RegisterDto } from '@app/modules/auth/dto'
+import { AppException } from '@app/common/exceptions/app.exception'
+import { ConfigService } from '@nestjs/config'
+import { AUTH_CACHE_KEY } from '@app/common/constants/auth.constants'
 import { AUTH_STREAM_KEY } from '@app/common/constants/redis.constants'
+import * as pt from'@app/common/prisma-types'
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
     private readonly coreAuthService: CoreAuthService,
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
-    private readonly logger: PinoLogger,
+    private readonly logger: PinoLogger
   ) {}
 
   /**
@@ -30,32 +31,35 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     // 1.检查是否为默认账户
     if (loginDto.email === 'anonymous@example.com') {
-      throw new AppException('该用户禁止登陆','UNAUTHORIZED',HttpStatus.UNAUTHORIZED);
+      throw new AppException('非法用户', 'UNAUTHORIZED', HttpStatus.UNAUTHORIZED)
     }
     // 2.验证用户凭据
-    const user = await this.coreAuthService.validateUser( loginDto.email, loginDto.password );
+    const user = await this.coreAuthService.validateUser(loginDto.email, loginDto.password)
     if (!user) {
-      throw new AppException('无效的邮箱或密码','UNAUTHORIZED',HttpStatus.UNAUTHORIZED);
+      throw new AppException('无效的邮箱或密码', 'UNAUTHORIZED', HttpStatus.UNAUTHORIZED)
     }
-    const { accessToken, refreshToken } = await this.coreAuthService.generateTokens(user);
-    
+    const { accessToken, refreshToken } = await this.coreAuthService.generateTokens(user)
+
     // 3.缓存用户的refreshToken
     try {
-      const expiresAt = new Date(Date.now() + this.configService.get('auth.jwtRefreshExpiresIn'));
-      await this.redisService.hset(AUTH_CACHE_KEY(user.id),'token',refreshToken);
-      await this.redisService.hset(AUTH_CACHE_KEY(user.id),'expiresAt',expiresAt.toISOString());
-      await this.redisService.expire(AUTH_CACHE_KEY(user.id), 7 * 24 * 60 * 60);
+      const expiresAt = new Date(Date.now() + this.configService.get('auth.jwtRefreshExpiresIn'))
+      await this.redisService.hset(AUTH_CACHE_KEY(user.id), 'token', refreshToken)
+      await this.redisService.hset(AUTH_CACHE_KEY(user.id), 'expiresAt', expiresAt.toISOString())
+      await this.redisService.expire(AUTH_CACHE_KEY(user.id), 7 * 24 * 60 * 60)
     } catch (error) {
-      this.logger.warn('Redis缓存失败，但不影响登录:', error);
+      this.logger.warn('Redis缓存失败，但不影响登录:', error)
     }
 
     // 返回用户信息(过滤敏感字段)
-    const safeUser = await this.userService.getSafeUser(user);
-    
+    const safeUser = await this.userService.getSafeUser(user)
+
     // 异步添加登录事件，不阻塞登录流程
-    this.redisService.xadd(AUTH_STREAM_KEY, '*', {event:'login',data:`用户 ${user.userName} 登录成功`});
-    
-    return { accessToken, refreshToken, user:safeUser };
+    this.redisService.xadd(AUTH_STREAM_KEY, '*', {
+      event: 'login',
+      data: `用户 ${user.userName} 登录成功`,
+    })
+
+    return { accessToken, refreshToken, user: safeUser }
   }
 
   /**
@@ -64,27 +68,30 @@ export class AuthService {
    * @returns 创建的用户
    * @throws ConflictException 邮箱已存在
    */
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<pt.SAFE_USER_TYPE> {
     // 检查邮箱是否已存在
-    const existingUser = await this.userService.findByEmailOptional(registerDto.email);
+    const existingUser = await this.userService.findByEmailOptional(registerDto.email)
     if (existingUser) {
-      throw new AppException('该邮箱已被注册','CONFLICT',HttpStatus.CONFLICT,{email:registerDto.email});
+      throw new AppException('该邮箱已被注册', 'CONFLICT', HttpStatus.CONFLICT, {
+        email: registerDto.email,
+      })
     }
 
     // 查找角色
-    const role = await this.roleService.findByNameOptional(registerDto.role);
+    const role = await this.roleService.findByNameOptional(registerDto.role)
     if (!role) {
-      throw new AppException('角色不存在','Role_NOT_FOUND',HttpStatus.BAD_REQUEST,{role:registerDto.role});
+      throw new AppException('角色不存在', 'Role_NOT_FOUND', HttpStatus.BAD_REQUEST, {
+        role: registerDto.role,
+      })
     }
 
     // 创建新用户
-    const user = await this.userService.create({
+    return await this.userService.create({
       email: registerDto.email,
       password: await this.coreAuthService.hashPassword(registerDto.password),
       userName: registerDto.username,
-      roleId: role.id
-    });
-    return user;
+      roleId: role.id,
+    })
   }
 
   /**

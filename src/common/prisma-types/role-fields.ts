@@ -3,7 +3,7 @@ import type { Prisma } from '@prisma/client';
 // 字段列表（用于工具函数，可选）
 const ROLE_TABLE_FIELDS = [ "id", "name", "createdAt", "updatedAt", "deletedAt"] as const;
 
-// 预设字段对象（只包含 User 自身字段，不包含 role 等关联）
+// 预设字段对象（只包含 Role 自身字段，不包含 role 等关联）
 const DEFAULT_ROLE_FIELDS = {
   id: true,
   name: true,

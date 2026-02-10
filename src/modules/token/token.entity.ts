@@ -7,7 +7,6 @@ export class Token {
   token: string = '';
   type: TokenType = TokenType.REFRESH;
   expiresAt!: Date;
-  updatedAt!: Date;
 
   constructor(partial: any = {}) {
     this.id= partial.id || 0
@@ -15,6 +14,5 @@ export class Token {
     this.token= partial.token || ''
     this.type= partial.type || TokenType.REFRESH
     this.expiresAt= partial.expiresAt || new Date()
-    this.updatedAt= partial.updatedAt || new Date()
   }
 }

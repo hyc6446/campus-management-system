@@ -27,7 +27,6 @@ export class RolesGuard implements CanActivate {
 
     // 检查用户角色是否在允许的角色列表中
     const hasRole = requiredRoles.some(role => role === user.role.name)
-
     if (!hasRole) {
       throw new AppException('没有足够的角色权限', 'INSUFFICIENT_ROLES', HttpStatus.FORBIDDEN)
     }

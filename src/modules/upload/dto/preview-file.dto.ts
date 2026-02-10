@@ -6,6 +6,3 @@ export const PreviewFileSchema = z.object({
 })
 
 export class PreviewFileDto extends createZodDto(PreviewFileSchema) {}
-
-// 导出类型供其他地方使用
-export type PreviewFileType = z.infer<typeof PreviewFileSchema>

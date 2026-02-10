@@ -15,9 +15,25 @@ import { KafkaModule } from '@core/kafka/kafka.module'
 
 // 导入模块
 import { AuthModule } from '@modules/auth/auth.module'
+import { BookModule } from '@modules/book/book.module'
+import { RoleModule } from '@modules/role/role.module'
 import { UserModule } from '@modules/user/user.module'
-// import { AuditLogModule } from '@modules/auditLog/auditLog.module'
+import { FileModule } from '@modules/upload/file.module'
+import { TokenModule } from '@modules/token/token.module'
+import { ClassModule } from '@modules/class/class.module.'
+import { BorrowModule } from '@modules/borrow/borrow.module'
+import { CourseModule } from '@modules/course/course.module'
+import { NoticeModule } from '@modules/notice/notice.module'
+import { StudentModule } from '@modules/student/student.module'
+
+import { PermissionModule } from '@modules/permission/permission.module'
 import { RuleConfigModule } from '@modules/rule-config/rule-config.module'
+import { LibrarySeatModule } from '@modules/library-seat/library-seat.module'
+import { SeatReservationModule } from '@modules/seat-reservation/seat-reservation.module'
+import { BookReservationModule } from '@modules/book-reservation/book-reservation.module'
+import { CourseEnrollmentModule } from '@modules/course-enrollment/course-enrollment.module'
+
+
 
 // 导入模块
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter'
@@ -82,6 +98,20 @@ import loggerConfig from '@config/logger.config';
     AuthModule,
     UserModule,
     RuleConfigModule,
+    BookModule,
+    RoleModule,
+    FileModule,
+    TokenModule,
+    ClassModule,
+    BorrowModule,
+    CourseModule,
+    NoticeModule,
+    StudentModule,
+    PermissionModule,
+    LibrarySeatModule,
+    SeatReservationModule,
+    BookReservationModule,
+    CourseEnrollmentModule,
   ],
   controllers: [AppController],
   providers: [

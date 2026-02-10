@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common'
 import { UserRepository } from './user.repository'
-import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto'
+import { CreateDto, UpdateDto, QueryDto, UsersResDto, ResponseDto } from './dto'
 import type { Prisma, User } from '@prisma/client'
 import * as pt from '@app/common/prisma-types'
 import { AppException } from '@app/common/exceptions/app.exception'
@@ -15,7 +15,7 @@ export class UserService {
    * @returns 用户对象
    * @throws NotFoundException 用户不存在
    */
-  async findById(id: number): Promise<pt.SAFE_USER_TYPE> {
+  async findById(id: number): Promise<pt.USER_SAFE_ROLE_DEFAULT_TYPE> {
     const user = await this.userRepository.findById(id)
     if (!user) {
       throw new AppException('用户不存在', 'USER_NOT_FOUND', HttpStatus.NOT_FOUND)
@@ -26,7 +26,7 @@ export class UserService {
   async findByIdWithRole(id: number): Promise<pt.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
     return await this.userRepository.findByIdWithRole(id)
   }
-  async findByIdOptional(id: number): Promise<pt.SAFE_USER_TYPE | null> {
+  async findByIdOptional(id: number): Promise<pt.USER_SAFE_ROLE_DEFAULT_TYPE | null> {
     return await this.userRepository.findById(id)
   }
   /**
@@ -60,7 +60,7 @@ export class UserService {
    * @param createData 用户数据
    * @returns 创建的用户
    */
-  async create(createData: CreateUserDto): Promise<pt.SAFE_USER_TYPE> {
+  async create(createData: CreateDto): Promise<pt.SAFE_USER_TYPE> {
     return this.userRepository.create(createData)
   }
 
@@ -73,7 +73,7 @@ export class UserService {
    * @throws ForbiddenException 无权限
    * @throws BadRequestException 无效操作
    */
-  async update(id: number, updateData: UpdateUserDto): Promise<pt.SAFE_USER_TYPE> {
+  async update(id: number, updateData: UpdateDto): Promise<pt.SAFE_USER_TYPE> {
     const user = await this.findById(id)
 
     // 检查用户是否存在
@@ -95,7 +95,7 @@ export class UserService {
    * @param filters 过滤条件
    * @returns 分页结果
    */
-  async findAll(query: QueryUserDto) {
+  async findAll(query: QueryDto) {
     // 非管理员只能看到自己的信息
     const {
       page = 1,
@@ -186,7 +186,7 @@ export class UserService {
     const idNumbers = ids.split(',').map(Number)
     return await this.userRepository.activateMany(idNumbers)
   }
-  
+
   /**
    * 获取安全的用户对象（移除敏感字段）
    * @param user 用户对象

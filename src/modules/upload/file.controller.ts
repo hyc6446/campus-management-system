@@ -44,7 +44,7 @@ export class FileController {
   @ApiOperation({ summary: '获取文件预览地址' })
   @ApiResponse({ status: HttpStatus.OK, description: '文件预览地址' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '文件不存在' })
-  @Get('secure')
+  @Get()
   async getPreviewUrl(@Query('fileName') fileName: string) {
     return await this.fileService.getPreviewUrl(fileName)
   }

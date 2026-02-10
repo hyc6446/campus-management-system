@@ -51,7 +51,7 @@ services:
       - campus-network
 
   kafka:
-    image: confluentinc/cp-kafka:7.5.3
+    image: confluentinc/cp-kafka:7.7.7
     container_name: campus-kafka
     ports:
       - "9092:9092"

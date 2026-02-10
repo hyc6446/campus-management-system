@@ -1,4 +1,2 @@
-import { MultiFilesDto } from './multi-files.dto';
-import { PreviewFileDto } from './preview-file.dto';
-
-export { MultiFilesDto, PreviewFileDto }
+export { MultiFilesDto } from './multi-files.dto';
+export { PreviewFileDto } from './preview-file.dto';

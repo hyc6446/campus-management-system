@@ -1,10 +1,11 @@
 import { ZodSerializerInterceptor } from 'nestjs-zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import { CurrentUser } from '@common/decorators/current-user.decorator'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import { AuthGuard } from '@common/guards/auth.guard'
 import { UserService } from './user.service'
 import { User } from './user.entity'
-import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto/index'
+import { CreateDto, UpdateDto, QueryDto } from './dto/index'
 // import { Roles } from '@app/common/decorators/roles.decorator'
 // import { RoleType } from '../role/role.entity'
 import {
@@ -38,7 +39,7 @@ export class UserController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误' })
   @Get()
-  async findAll(@Query() query: QueryUserDto) {
+  async findAll(@Query() query: QueryDto) {
     return await this.userService.findAll(query)
   }
 
@@ -56,7 +57,7 @@ export class UserController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误' })
   @Put()
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateData: UpdateUserDto) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateData: UpdateDto) {
     return await this.userService.update(id, updateData)
   }
 
@@ -73,7 +74,7 @@ export class UserController {
   @ApiResponse({ status: HttpStatus.OK, description: '用户批量删除成功' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '请求参数错误' })
-  @Delete('many/delete')
+  @Delete('many')
   async deleteMany(@Body('ids') ids: string) {
     return await this.userService.deleteMany(ids)
   }

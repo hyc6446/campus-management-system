@@ -6,8 +6,21 @@ import { Roles } from '@app/common/decorators/roles.decorator'
 import { RuleConfig } from '@app/modules/rule-config/rule-config.entity'
 import { RoleType } from '@app/modules/role/role.entity'
 import { RuleConfigService } from '@app/modules/rule-config/rule-config.service'
-import { CreateRuleConfigDto, UpdateRuleConfigDto, QueryRuleConfigDto } from '@app/modules/rule-config/dto'
-import { Controller, Get, Post, Body, Put, Delete, Param, Query, UseGuards, HttpStatus, ParseIntPipe, UseInterceptors } from '@nestjs/common'
+import { CreateDto, UpdateDto, QueryDto } from '@app/modules/rule-config/dto'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Delete,
+  Param,
+  Query,
+  UseGuards,
+  HttpStatus,
+  ParseIntPipe,
+  UseInterceptors,
+} from '@nestjs/common'
 
 @ApiTags('casl规则配置项')
 @Controller('rule-config')
@@ -15,14 +28,14 @@ import { Controller, Get, Post, Body, Put, Delete, Param, Query, UseGuards, Http
 @ApiBearerAuth()
 @UseInterceptors(ZodSerializerInterceptor)
 export class RuleConfigController {
-  constructor(private readonly ruleConfigService: RuleConfigService) { }
+  constructor(private readonly ruleConfigService: RuleConfigService) {}
 
   @ApiOperation({ summary: '查询配置项列表' })
   @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: RuleConfig, isArray: true })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '查询参数错误' })
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Get()
-  async findAll(@Query() query: QueryRuleConfigDto) {
+  async findAll(@Query() query: QueryDto) {
     return await this.ruleConfigService.findAll(query)
   }
 
@@ -43,8 +56,8 @@ export class RuleConfigController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   @Roles(RoleType.ADMIN)
   @Post()
-  async create(@Body() createRuleConfigDto: CreateRuleConfigDto) {
-    return await this.ruleConfigService.create(createRuleConfigDto)
+  async create(@Body() createDto: CreateDto) {
+    return await this.ruleConfigService.create(createDto)
   }
 
   @ApiOperation({ summary: '更新配置项' })
@@ -54,7 +67,10 @@ export class RuleConfigController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   @Roles(RoleType.ADMIN)
   @Put(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateRuleConfigDto: UpdateRuleConfigDto) {
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRuleConfigDto: UpdateDto
+  ) {
     return await this.ruleConfigService.update(id, updateRuleConfigDto)
   }
 
@@ -68,5 +84,4 @@ export class RuleConfigController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     return await this.ruleConfigService.remove(id)
   }
-
 }

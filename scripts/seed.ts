@@ -10,7 +10,7 @@ async function main() {
   // 清空数据，注意顺序避免外键约束错误
   await prisma.$transaction([
     prisma.token.deleteMany(),
-    prisma.auditLog.deleteMany(),
+    // prisma.auditLog.deleteMany(),
     prisma.permission.deleteMany(),
     prisma.user.deleteMany(),
     prisma.role.deleteMany(),

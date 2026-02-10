@@ -9,16 +9,12 @@ datasource db {
 
 // 角色表 - 定义系统中的角色类型，如管理员、教师、学生等
 model Role {
-  // 主键：自增ID
-  id          Int          @id @default(autoincrement()) @map("id")
-  // 角色名称：唯一约束，用于标识角色类型
-  name        String       @unique @map("name")
-  // 创建时间：记录角色创建时间
-  createdAt   DateTime     @default(now()) @map("created_at")
-  // 更新时间：记录角色最后更新时间
-  updatedAt   DateTime?    @updatedAt @map("updated_at")
-  // 删除时间戳：标记角色是否被禁用
-  deletedAt   DateTime?    @map("deleted_at")
+  id        Int       @id @default(autoincrement()) @map("id")
+  name      String    @unique @map("name") // 角色名称
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
   // 关系定义
   // 一对多：一个角色可分配给多个用户
   users       User[]       @relation("UserRole")
@@ -31,38 +27,35 @@ model Role {
 
 // 用户基础表 - 存储系统所有用户信息
 model User {
-  // 主键：自增ID
   id                  Int       @id @default(autoincrement()) @map("id")
-  // 邮箱：唯一约束，用于用户登录和系统通知
   email               String    @unique @map("email")
-  // 密码：存储加密后的哈希值，确保安全性
   password            String    @map("password")
-  // 用户名：用户登录名
-  userName            String?   @map("user_name")
-  // 头像URL：用户头像图片的存储路径
-  avatarUrl           String?   @map("avatar_url")
-  // 电话号码：用户联系方式
-  phone               String?   @map("phone")
-  // 外键：关联到角色表，标识用户所属角色
+  userName            String?   @map("user_name") // 用户名
+  avatarUrl           String?   @map("avatar_url") // 用户头像URL
+  phone               String?   @map("phone") // 用户手机号
   roleId              Int       @map("role_id")
-  // 多对一：用户属于一个角色
   role                Role      @relation("UserRole", fields: [roleId], references: [id])
-  // 失败登录尝试次数：记录用户连续失败登录次数，用于防止暴力攻击
-  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
-  // 账号锁定时间：记录用户账号被锁定的时间，用于防止暴力攻击
-  lockUntil           DateTime? @map("lock_until")
-  // 创建时间：记录用户注册时间
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts") // 失败登录尝试次数
+  lockUntil           DateTime? @map("lock_until") // 账户锁定时间
+  // lastLoginAt         DateTime? @map("last_login_at") // 最后登录时间
   createdAt           DateTime  @default(now()) @map("created_at")
-  // 更新时间：记录用户信息最后更新时间
   updatedAt           DateTime? @updatedAt @map("updated_at")
-  // 软删除时间戳：标记用户是否被删除
   deletedAt           DateTime? @map("deleted_at")
 
   // 反向关系定义
-  // 一对多：用户的所有审计日志
-  auditLogs AuditLog[]
   // 一对多：用户的所有令牌
-  tokens    Token[]
+  tokens            Token[]
+  // 一对多：用户的所有图书借阅记录
+  borrows           Borrow[]
+  // 一对多：用户的所有图书预约记录
+  bookReservations  BookReservation[]
+  // 一对多：用户的所有图书馆座位预约记录
+  seatReservations  SeatReservation[]
+  // 一对多：用户的所有课程订阅记录
+  courseEnrollments CourseEnrollment[]
+  
+  systemNotices     SystemNotice[]
+  courseTeachings   CourseTeaching[]
 
   // 映射到数据库表名
   @@map("users")
@@ -70,22 +63,14 @@ model User {
 
 // 权限表 - 定义系统中的权限点，使用RBAC模型
 model Permission {
-  // 主键：自增ID
-  id         Int       @id @default(autoincrement()) @map("id")
-  // 操作类型：如read、create、update、delete等
-  action     String    @map("action")
-  // 操作对象：如User、Student、Course等资源
-  subject    String    @map("subject")
-  // 外键：关联到角色表
-  roleId     Int       @map("role_id")
-  // 多对一：权限属于一个角色
-  role       Role      @relation("RolePermission", fields: [roleId], references: [id])
-  // 创建时间：记录权限创建时间
-  createdAt  DateTime  @default(now()) @map("created_at")
-  // 更新时间：记录权限最后更新时间
-  updatedAt  DateTime? @updatedAt @map("updated_at")
-  // 删除时间戳：标记权限是否被删除
-  deletedAt  DateTime? @map("deleted_at")
+  id        Int       @id @default(autoincrement()) @map("id")
+  action    String    @map("action") // 操作类型：如read、create、update、delete等
+  subject   String    @map("subject") // 操作对象：如User、Student、Course等资源
+  roleId    Int       @map("role_id")
+  role      Role      @relation("RolePermission", fields: [roleId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   // 唯一约束：确保同一角色对同一资源的同一操作只有一条权限记录
   @@unique([action, subject, roleId], name: "permission_action_subject_role_unique")
@@ -93,66 +78,27 @@ model Permission {
   @@map("permissions")
 }
 
-// 审计日志 - 记录系统关键操作，用于安全审计和问题追踪
-model AuditLog {
-  // 主键：自增ID
-  id         Int       @id @default(autoincrement()) @map("id")
-  // 外键：关联到用户表
-  userId     Int       @map("user_id")
-  // 多对一：日志由用户触发
-  user       User      @relation(fields: [userId], references: [id])
-  // 操作类型：记录具体的操作行为
-  action     String    @map("action")
-  // 操作资源类型：记录操作的实体类型
-  resource   String    @map("resource")
-  // 操作的具体资源ID：指向被操作的具体记录
-  resourceId String?   @map("resource_id")
-  // HTTP方法：记录触发操作的HTTP方法（如GET、POST等）
-  method     String    @map("method")
-  // 请求路径：记录触发操作的URL路径
-  path       String    @map("path")
-  // 操作时长：记录操作处理时间（毫秒）
-  duration   Int       @map("duration")
-  // 操作时间：记录操作发生的时间
-  timestamp  DateTime? @default(now()) @map("timestamp")
-  // 是否成功：标识操作是否执行成功
-  isSuccess  Boolean   @default(true) @map("is_success")
-  // 操作详情：以JSON格式存储操作的详细信息
-  details    Json      @map("details")
-  // 用户IP地址：记录操作时的IP地址
-  ip         String?   @map("ip_address")
-  // 用户浏览器信息：记录操作时的浏览器环境
-  userAgent  String?   @map("user_agent")
-  // 操作时间：记录操作发生的时间
-  createdAt  DateTime  @default(now()) @map("created_at")
-  // 更新时间：记录日志最后更新时间
-  updatedAt  DateTime? @updatedAt @map("updated_at")
-  // 软删除时间戳：标记日志是否被删除
-  deletedAt  DateTime? @map("deleted_at")
+// 路由表
+model Route {
+  id        Int       @id @default(autoincrement()) @map("id")
+  path      String    @map("path") // 路由路径
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  // 映射到数据库表名
-  @@map("audit_logs")
+  @@map("routes")
 }
 
 // 访问令牌 - 管理用户的身份令牌
 model Token {
-  // 主键：自增ID
   id        Int       @id @default(autoincrement()) @map("id")
-  // 外键：关联到用户表
   userId    Int       @map("user_id")
-  // 多对一：令牌属于用户
   user      User      @relation(fields: [userId], references: [id])
-  // 令牌值：唯一约束，用于身份验证
-  token     String    @unique @map("token")
-  // 令牌类型：标识令牌的用途（ACCESS、REFRESH等）
-  type      TokenType @map("type")
-  // 过期时间：令牌的有效期
-  expiresAt DateTime  @map("expires_at")
-  // 创建时间：记录令牌创建时间
+  token     String    @unique @map("token") // 令牌值：唯一约束，用于身份验证
+  type      TokenType @map("type") // 令牌类型：标识令牌的用途（ACCESS、REFRESH等）
+  expiresAt DateTime  @map("expires_at") // 过期时间：令牌的有效期
   createdAt DateTime  @default(now()) @map("created_at")
-  // 更新时间：记录令牌状态最后更新时间
   updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  // 添加软删除字段
   deletedAt DateTime? @map("deleted_at")
 
   // 映射到数据库表名
@@ -162,19 +108,268 @@ model Token {
 // 定义权限的操作类型和操作对象表
 model RuleConfig {
   id        Int       @id @default(autoincrement()) @map("id")
-  rule      String    @map("rule")
-  type      String    @map("type")
+  rule      String    @unique @map("rule") // 规则名称：如read、create|Course、User等
+  type      String    @map("type") // 规则类型：如action、subject等
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  @@unique(rule, name: "rule_config_rule_unique")
   @@map("rule_configs")
 }
 
+// 班级表
+model Class {
+  id          Int       @id @default(autoincrement()) @map("id")
+  name        String    @unique @map("name") // 班级名称：唯一约束，确保班级名称的唯一性
+  description String?   @map("description")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  // 定义关系
+  // 一对多：班级的所有学生
+  students Student[]
+
+  @@map("classes")
+}
+
+// 学生表
+model Student {
+  id        Int       @id @default(autoincrement()) @map("id")
+  name      String    @map("name") // 学生姓名
+  password  String    @map("password") // 学生密码
+  phone     String?   @map("phone") // 学生手机号
+  cardId    String?   @unique @map("card_id") // 学生学号：唯一约束，确保学号的唯一性
+  classId   Int       @map("class_id") // 班级ID
+  class     Class     @relation(fields: [classId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("students")
+}
+
+// 课程表
+model Course {
+  id          Int       @id @default(autoincrement()) @map("id")
+  name        String    @unique @map("name") // 课程名称
+  credit      Int       @default(0) @map("credit") // 课程学分
+  description String?   @map("description")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  // 定义关系
+  // 一对多：课程的所有课程注册记录
+  enrollments CourseEnrollment[]
+  // 一对多：课程的所有课程授课记录
+  teachings   CourseTeaching[]
+
+  @@map("courses")
+}
+
+// 课程授课表
+model CourseTeaching {
+  id        Int       @id @default(autoincrement()) @map("id")
+  courseId  Int       @map("course_id") // 课程ID
+  course    Course    @relation(fields: [courseId], references: [id]) // 课程关联
+  teacherId Int       @map("teacher_id") // 教师ID
+  teacher   User      @relation(fields: [teacherId], references: [id]) // 教师关联
+  semester  String    @map("semester") // 学期
+  year      Int       @map("year") // 学年
+  startTime DateTime  @map("start_time") // 开始时间
+  endTime   DateTime  @map("end_time") // 结束时间
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // 定义关系
+  // 一对多：课程授课的所有课程注册记录
+  enrollments CourseEnrollment[]
+
+  @@map("course_teachings")
+}
+
+// 课程登记表
+model CourseEnrollment {
+  id         Int              @id @default(autoincrement()) @map("id")
+  courseId   Int              @map("course_id") // 课程ID
+  course     Course           @relation(fields: [courseId], references: [id]) // 课程关联
+  userId     Int              @map("user_id") // 订阅用户ID
+  user       User             @relation(fields: [userId], references: [id]) // 用户关联
+  teachingId Int              @map("teaching_id") // 课程授课ID
+  teaching   CourseTeaching   @relation(fields: [teachingId], references: [id]) // 课程授课关联
+  status     EnrollmentStatus @default(ACTIVE) @map("status") // 注册状态：默认已注册
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime?        @updatedAt @map("updated_at")
+  deletedAt  DateTime?        @map("deleted_at")
+
+  @@unique([courseId, userId, teachingId], name: "course_user_teaching_unique")
+  @@map("course_enrollments")
+}
+
+// 图书表
+model Book {
+  id              Int               @id @default(autoincrement()) @map("id")
+  isbn            String            @map("isbn") // 图书ISBN：唯一约束，确保图书ISBN的唯一性
+  name            String            @map("name") // 图书名称
+  subname         String?           @map("subname") // 图书副标题
+  originalName    String?           @map("original_name") // 图书原名称
+  author          String?           @map("author") // 图书作者
+  publisher       String?           @map("publisher") // 图书出版社
+  publicationYear Int?              @map("publication_year") // 图书出版年份
+  stock           Int               @default(0) @map("stock") // 图书库存数量
+  description     String?           @map("description") // 图书描述
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime?         @updatedAt @map("updated_at")
+  deletedAt       DateTime?         @map("deleted_at")
+  // 一对多：图书的所有借阅记录
+  borrows         Borrow[]
+  // 一对多：图书的所有预定记录
+  reservations    BookReservation[]
+
+  @@unique([isbn], name: "book_isbn_unique")
+  @@index([name], name: "book_name_index")
+  @@map("books")
+}
+
+// 图书借阅表
+model Borrow {
+  id         Int          @id @default(autoincrement()) @map("id")
+  bookId     Int          @map("book_id")
+  book       Book         @relation(fields: [bookId], references: [id])
+  userId     Int          @map("user_id")
+  user       User         @relation(fields: [userId], references: [id])
+  status     BorrowStatus @default(PENDING) @map("status") // 借阅状态：默认待处理
+  borrowDate DateTime     @default(now()) @map("borrow_date") // 借阅日期：默认当前时间
+  dueDate    DateTime     @default(now()) @map("due_date") // 到期日期：默认当前时间
+  returnDate DateTime?    @map("return_date") // 返还日期：可选字段
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime?    @updatedAt @map("updated_at")
+  deletedAt  DateTime?    @map("deleted_at")
+
+  @@map("borrows")
+}
+
+// 图书预定表
+model BookReservation {
+  id          Int               @id @default(autoincrement()) @map("id")
+  bookId      Int               @map("book_id")
+  book        Book              @relation(fields: [bookId], references: [id])
+  userId      Int               @map("user_id")
+  user        User              @relation(fields: [userId], references: [id])
+  status      ReservationStatus @default(PENDING) @map("status") // 预定状态：默认待处理
+  reserveTime DateTime          @default(now()) @map("reserve_time") // 预定时间：默认当前时间
+  expireTime  DateTime          @default(now()) @map("expire_time") // 过期时间：默认当前时间
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime?         @updatedAt @map("updated_at")
+  deletedAt   DateTime?         @map("deleted_at")
+
+  @@map("book_reservations")
+}
+
+// 图书馆座位表
+model LibrarySeat {
+  id         Int        @id @default(autoincrement()) @map("id")
+  seatNumber String     @unique @map("seat_number") // 座位编号：唯一约束，确保座位编号的唯一性
+  location   String     @map("location") // 座位位置
+  status     SeatStatus @default(AVAILABLE) @map("status") // 座位状态：默认可预约
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime?  @updatedAt @map("updated_at")
+  deletedAt  DateTime?  @map("deleted_at")
+
+  // 关系定义
+  // 一对多：座位的所有预定记录
+  reservations SeatReservation[]
+
+  @@map("library_seats")
+}
+
+// 图书馆座位预定表（重新设计）
+model SeatReservation {
+  id          Int               @id @default(autoincrement()) @map("id")
+  seatId      Int               @map("seat_id") // 座位ID
+  seat        LibrarySeat       @relation(fields: [seatId], references: [id])
+  userId      Int               @map("user_id") // 用户ID
+  user        User              @relation(fields: [userId], references: [id])
+  status      ReservationStatus @default(PENDING) @map("status") // 添加状态
+  reserveDate DateTime          @default(now()) @map("reserve_date") // 预定日期
+  startTime   DateTime          @map("start_time") // 预定开始时间
+  endTime     DateTime          @map("end_time") // 预定结束时间
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime?         @updatedAt @map("updated_at")
+  deletedAt   DateTime?         @map("deleted_at")
+
+  @@map("library_seat_reservations")
+}
+
+// 系统公告表
+model SystemNotice {
+  id          Int        @id @default(autoincrement()) @map("id")
+  type        NoticeType @default(ANNOUNCEMENT) @map("type") // 公告类型：默认信息公告
+  publisherId Int?       @map("publisher_id") // 发布者ID：可选字段
+  publisher   User?      @relation(fields: [publisherId], references: [id]) // 发布者关联：可选关系
+  title       String     @map("title")
+  content     String     @map("content")
+  expireAt    DateTime?  @map("expire_at") // 过期时间：可选字段
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime?  @updatedAt @map("updated_at")
+  deletedAt   DateTime?  @map("deleted_at")
+
+  @@map("system_notices")
+}
+
+// ==============枚举=====================
+// 令牌类型
 enum TokenType {
-  ACCESS
-  REFRESH
-  RESET_PASSWORD
-  VERIFY_EMAIL
+  ACCESS // 访问令牌
+  REFRESH // 刷新令牌
+  RESET_PASSWORD // 重置密码令牌
+  VERIFY_EMAIL // 验证邮箱令牌
+}
+
+enum RoleType {
+  ADMIN
+  USER
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+// 借阅状态
+enum BorrowStatus {
+  PENDING // 待确认
+  ACTIVE // 借阅中
+  RETURNED // 已归还
+  OVERDUE // 逾期
+}
+
+// 预定状态
+enum ReservationStatus {
+  PENDING // 待确认
+  CONFIRMED // 已确认
+  EXPIRED // 已过期
+  CANCELLED // 已取消
+  FULFILLED // 已完成
+}
+
+// 座位状态
+enum SeatStatus {
+  AVAILABLE // 可用
+  OCCUPIED // 占用
+  MAINTENANCE // 维护中
+}
+
+// 课程订阅状态
+enum EnrollmentStatus {
+  ACTIVE // 活跃
+  CANCELLED // 已取消
+  COMPLETED // 已完成
+}
+
+enum NoticeType {
+  ANNOUNCEMENT // 公告
+  NOTICE // 通知
+  ALERT // 警报
+  EVENT // 事件
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '@core/prisma/prisma.service'
-import { CreateRuleConfigDto, UpdateRuleConfigDto } from './dto'
+import { CreateDto, UpdateDto } from './dto'
 import * as pt from '@app/common/prisma-types'
 
 @Injectable()
@@ -10,24 +10,23 @@ export class RuleConfigRepository {
 
   async findAll(
     page: number,
-    limit: number,
+    take: number,
     skip: number,
     where: Prisma.RuleConfigWhereInput,
-    orderBy: Prisma.RuleConfigOrderByWithRelationInput[]
-  ) {
+    orderBy: Prisma.RuleConfigOrderByWithRelationInput
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_RULE_CONFIG_TYPE>> {
     const [data, total] = await Promise.all([
       this.prisma.ruleConfig.findMany({
         where,
         skip,
-        take:
-          limit,
+        take,
         orderBy,
         select: pt.DEFAULT_RULE_CONFIG_FIELDS,
       }),
       this.prisma.ruleConfig.count({ where }),
     ])
 
-    return { data, total, page, limit }
+    return { data, total, page, take }
   }
 
   /**
@@ -77,27 +76,36 @@ export class RuleConfigRepository {
       select: pt.FULL_RULE_CONFIG_FIELDS,
     })
   }
+
+  async findByNameAndType(rule: string, type: string): Promise<pt.DEFAULT_RULE_CONFIG_TYPE | null> {
+    return this.prisma.ruleConfig.findUnique({
+      where: { rule, type },
+      select: pt.DEFAULT_RULE_CONFIG_FIELDS,
+    })
+  }
+
+
   /**
    * 创建新规则配置
-   * @param createRuleConfigDto 规则配置数据
+   * @param data 规则配置数据
    * @returns 创建的规则配置
    */
-  async create(createRuleConfigDto: CreateRuleConfigDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
     return this.prisma.ruleConfig.create({
-      data: createRuleConfigDto,
+      data,
       select: pt.DEFAULT_RULE_CONFIG_FIELDS,
     })
   }
   /**
    * 更新规则配置
    * @param id 规则配置ID
-   * @param updateRuleConfigDto 更新数据
+   * @param updateDto 更新数据
    * @returns 更新后的规则配置
    */
-  async update(id: number, updateRuleConfigDto: UpdateRuleConfigDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
     return this.prisma.ruleConfig.update({
       where: { id },
-      data: updateRuleConfigDto,
+      data,
       select: pt.DEFAULT_RULE_CONFIG_FIELDS,
     })
   }

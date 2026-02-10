@@ -1,12 +1,4 @@
-import { QueryRuleConfigSchema, QueryRuleConfigDto } from './query-rule-config.dto'
-import { UpdateRuleConfigSchema, UpdateRuleConfigDto } from './update-rule-config.dto'
-import { CreateRuleConfigSchema, CreateRuleConfigDto } from './create-rule-config.dto'
-
-export {
-  QueryRuleConfigSchema,
-  UpdateRuleConfigSchema,
-  CreateRuleConfigSchema,
-  QueryRuleConfigDto,
-  UpdateRuleConfigDto,
-  CreateRuleConfigDto,
-}
+export { QueryDto } from './query.dto'
+export { UpdateDto } from './update.dto'
+export { CreateDto } from './create.dto'
+export { RulesResDto, ResponseDto } from './response.dto'

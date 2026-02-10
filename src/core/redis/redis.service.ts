@@ -377,13 +377,29 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         messages: messages.map((msg: any) => {
           const [id, fields] = msg
           const parsedFields: Record<string, any> = {}
-          for (const [key, value] of Object.entries(fields)) {
-            try {
-              parsedFields[key] = JSON.parse(String(value))
-            } catch {
-              parsedFields[key] = value
+          
+          // 处理 ioredis 返回的数组格式字段 [key1, value1, key2, value2, ...]
+          if (Array.isArray(fields)) {
+            for (let i = 0; i < fields.length; i += 2) {
+              const key = fields[i]
+              const value = fields[i + 1]
+              try {
+                parsedFields[key] = JSON.parse(String(value))
+              } catch {
+                parsedFields[key] = value
+              }
+            }
+          } else {
+            // 处理对象格式字段
+            for (const [key, value] of Object.entries(fields)) {
+              try {
+                parsedFields[key] = JSON.parse(String(value))
+              } catch {
+                parsedFields[key] = value
+              }
             }
           }
+          
           return { id, ...parsedFields }
         }),
       }

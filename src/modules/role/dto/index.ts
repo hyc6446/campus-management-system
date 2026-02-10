@@ -1,10 +1,6 @@
-// 统一导出所有DTO类、Schema和类型
+export { CreateDto } from './create.dto'
+export { QueryDto } from './query.dto'
+export { UpdateDto } from './update.dto'
+export { RolesResDto, RoleResDto } from './response.dto'
 
-import { CreateRoleDto, type CreateRoleType } from './create-role.dto';
-import { QueryRoleDto, type QueryRoleType } from './query-role.dto';
-import { UpdateRoleDto, type UpdateRoleType } from './update-role.dto'; 
-export {
-  QueryRoleDto,
-  UpdateRoleDto,
-  CreateRoleDto,
-};
+

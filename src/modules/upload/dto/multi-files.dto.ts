@@ -7,5 +7,3 @@ export const MultiFilesSchema = z.object({
 
 export class MultiFilesDto extends createZodDto(MultiFilesSchema) {}
 
-// 导出类型供其他地方使用
-export type MultiFilesType = z.infer<typeof MultiFilesSchema>

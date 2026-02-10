@@ -12,6 +12,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
   intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
     return next.handle().pipe(
       map(data => {
+        const res = context.switchToHttp().getResponse()
         // 检查是否已经有ResponseUtil格式的数据
         // 如果数据已经是标准格式，直接返回
         if (data && typeof data === 'object' && 'success' in data) {
@@ -26,17 +27,20 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
           data.hasOwnProperty('total')
         ) {
           // 这是分页数据格式
-          return ResponseUtil.success({
-            data: data.data,
-            total: data.total,
-            page: data.page || 1,
-            pageSize: data.take || 10,
-            hasNextPage: data.total > (data.page || 1) * (data.take || 10),
-          })
+          return ResponseUtil.success(
+            {
+              data: data.data,
+              total: data.total,
+              page: data.page || 1,
+              pageSize: data.take || 10,
+              hasNextPage: data.total > (data.page || 1) * (data.take || 10),
+            },
+            res.statusCode
+          )
         }
 
         // 处理普通数据
-        return ResponseUtil.success(data)
+        return ResponseUtil.success(data, res.statusCode)
       })
     )
   }

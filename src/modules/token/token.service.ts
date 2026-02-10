@@ -1,8 +1,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common'
 import { Prisma, TokenType } from '@prisma/client'
 import { TokenRepository } from './token.repository'
-import { Token } from './token.entity'
-import { QueryTokenDto, CreateTokenDto } from './dto'
+import { QueryDto, CreateDto } from './dto'
 import { AppException } from '@app/common/exceptions/app.exception'
 import * as pt from '@app/common/prisma-types'
 
@@ -45,7 +44,7 @@ export class TokenService {
    * @param tokenData Token数据
    * @returns 创建的Token
    */
-  async create(tokenData: CreateTokenDto): Promise<pt.DEFAULT_TOKEN_TYPE> {
+  async create(tokenData: CreateDto): Promise<pt.DEFAULT_TOKEN_TYPE> {
     return this.tokenRepository.create(tokenData)
   }
 
@@ -54,7 +53,7 @@ export class TokenService {
    * @param query 查询参数
    * @returns Token列表
    */
-  async findAll(query: QueryTokenDto) {
+  async findAll(query: QueryDto) {
     const {
       page = 1,
       limit: take = 10,

@@ -9,7 +9,7 @@ import { TokenService } from './token.service'
 import { Token } from './token.entity'
 import { RoleType } from '@app/modules/role/role.entity'
 import * as pt from '@app/common/prisma-types'
-import { QueryTokenDto } from './dto'
+import { QueryDto } from './dto'
 import {
   Controller,
   Get,
@@ -43,7 +43,7 @@ export class TokenController {
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Token, action: Action.Read })
   @Get()
-  async findAll(@Query() query: QueryTokenDto) {
+  async findAll(@Query() query: QueryDto) {
     return this.tokenService.findAll(query)
   }
 
