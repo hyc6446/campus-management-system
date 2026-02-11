@@ -14,7 +14,7 @@ export class CourseService {
    * @param query 查询参数
    * @returns 课程列表和总数
    */
-  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_COURSE_TYPE>> {
+  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_COURSE_TYPE>> {
     const {
       page = 1,
       limit: take = 10,
@@ -59,7 +59,7 @@ export class CourseService {
    * @param data 课程数据
    * @returns 创建的课程
    */
-  async create(data: CreateDto): Promise<pt.SAFE_COURSE_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_COURSE_TYPE> {
     const existingCourse = await this.courseRepository.findByNameOptional(data.name)
     if (existingCourse) throw new AppException('课程已存在', 'Course_Exist', HttpStatus.BAD_REQUEST)
     return this.courseRepository.create(data)
@@ -71,7 +71,7 @@ export class CourseService {
    * @param data 更新数据
    * @returns 更新后的课程
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_COURSE_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_COURSE_TYPE> {
     // 检查课程是否存在
     const updatedata = await this.courseRepository.findByIdOptionalWithFull(id)
     if (!updatedata) throw new AppException('课程不存在', 'Course_No_Found', HttpStatus.NOT_FOUND)

@@ -9,8 +9,7 @@ const CourseItemSchema = z.object({
   credit: z.number().describe('学分'),
   description: z.string().describe('课程描述'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class CourseResDto extends createZodDto(ListResSchema(CourseItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(CourseItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(CourseItemSchema)) {}

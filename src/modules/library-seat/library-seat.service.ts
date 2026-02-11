@@ -16,7 +16,7 @@ export class LibrarySeatService {
    */
   async findAll(
     query: QueryDto
-  ): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_LIBRARY_SEAT_TYPE>> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_LIBRARY_SEAT_TYPE>> {
     const {
       page = 1,
       limit: take = 10,
@@ -63,7 +63,7 @@ export class LibrarySeatService {
    * @param data 图书馆座位数据
    * @returns 创建的图书馆座位
    */
-  async create(data: CreateDto): Promise<pt.SAFE_LIBRARY_SEAT_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_LIBRARY_SEAT_TYPE> {
     const existingLibrarySeat = await this.librarySeatRepository.findByNumberOptional(data.seatNumber)
     if (existingLibrarySeat) throw new AppException('图书馆座位已存在', 'LibrarySeat_Exist', HttpStatus.BAD_REQUEST)
     return this.librarySeatRepository.create(data)
@@ -75,7 +75,7 @@ export class LibrarySeatService {
    * @param data 更新数据
    * @returns 更新后的图书馆座位
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_LIBRARY_SEAT_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_LIBRARY_SEAT_TYPE> {
     // 检查图书馆座位是否存在
     const updatedata = await this.librarySeatRepository.findByIdOptionalWithFull(id)
     if (!updatedata) throw new AppException('图书馆座位不存在', 'LibrarySeat_No_Found', HttpStatus.NOT_FOUND)

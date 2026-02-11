@@ -23,9 +23,9 @@ export class CourseRepository {
     skip: number,
     where: Prisma.CourseWhereInput,
     orderBy: Prisma.CourseOrderByWithRelationInput
-  ): Promise<{ data: pt.SAFE_COURSE_TYPE[]; total: number; page: number; take: number }> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_COURSE_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.course.findMany({ where, skip, take, orderBy, select: pt.SAFE_COURSE_FIELDS }),
+      this.prisma.course.findMany({ where, skip, take, orderBy, select: pt.DEFAULT_COURSE_FIELDS }),
       this.prisma.course.count({ where }),
     ])
     return { data, total, page, take }
@@ -82,10 +82,10 @@ export class CourseRepository {
    * @param data 课程数据
    * @returns 创建的课程
    */
-  async create(data: CreateDto): Promise<pt.SAFE_COURSE_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_COURSE_TYPE> {
     return this.prisma.course.create({
       data,
-      select: pt.SAFE_COURSE_FIELDS,
+      select: pt.DEFAULT_COURSE_FIELDS,
     })
   }
 
@@ -95,11 +95,11 @@ export class CourseRepository {
    * @param data 更新数据
    * @returns 更新后的课程
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_COURSE_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_COURSE_TYPE> {
     return this.prisma.course.update({
       where: { id },
       data,
-      select: pt.SAFE_COURSE_FIELDS,
+      select: pt.DEFAULT_COURSE_FIELDS,
     })
   }
 
@@ -109,12 +109,11 @@ export class CourseRepository {
    * @returns 是否删除成功
    */
   async delete(id: number): Promise<boolean> {
-    const deletedCourse = await this.prisma.course.update({
+    const data = await this.prisma.course.update({
       where: { id },
       data: { deletedAt: new Date() },
-      select: pt.SAFE_COURSE_FIELDS,
     })
-    return deletedCourse !== null
+    return data !== null
   }
 
   /**
@@ -123,10 +122,10 @@ export class CourseRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredCourse = await this.prisma.course.update({
+    const data = await this.prisma.course.update({
       where: { id },
       data: { deletedAt: null },
     })
-    return restoredCourse !== null
+    return data !== null
   }
 }

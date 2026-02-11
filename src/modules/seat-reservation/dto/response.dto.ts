@@ -13,10 +13,9 @@ const SeatReserveItemSchema = z.object({
   startTime: z.date().describe('开始时间'),
   endTime: z.date().describe('结束时间'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class SeatReservesResDto extends createZodDto(ListResSchema(SeatReserveItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(SeatReserveItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(SeatReserveItemSchema)) {}
 
 

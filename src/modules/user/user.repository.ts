@@ -143,12 +143,7 @@ export class UserRepository {
 
       // 创建新的刷新令牌
       return await prisma.token.create({
-        data: {
-          userId,
-          token: refreshToken,
-          type: 'REFRESH',
-          expiresAt,
-        },
+        data: { userId, token: refreshToken, type: 'REFRESH', expiresAt },
       })
     })
   }
@@ -166,9 +161,20 @@ export class UserRepository {
     skip: number = (page - 1) * take,
     where: Prisma.UserWhereInput = {},
     orderBy: Prisma.UserOrderByWithRelationInput = { createdAt: 'desc' }
-  ) {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.USER_ROLE_DEFAULT_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.user.findMany({ where, skip, take, orderBy }),
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: {
+          ...pt.DEFAULT_USER_FIELDS,
+          role: {
+            select: pt.DEFAULT_ROLE_FIELDS,
+          },
+        },
+      }),
       this.prisma.user.count({ where }),
     ])
 

@@ -28,14 +28,14 @@ export class BorrowRepository {
     skip: number,
     where: Prisma.BorrowWhereInput,
     orderBy: Prisma.BorrowOrderByWithRelationInput
-  ): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_BORROW_TYPE>> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_BORROW_TYPE>> {
     const [data, total] = await Promise.all([
       this.prisma.borrow.findMany({
         where,
         skip,
         take,
         orderBy,
-        select: pt.SAFE_BORROW_FIELDS,
+        select: pt.DEFAULT_BORROW_FIELDS,
       }),
       this.prisma.borrow.count({ where }),
     ])
@@ -73,10 +73,10 @@ export class BorrowRepository {
    * @param data 书籍借阅数据
    * @returns 创建的书籍借阅
    */
-  async create(data: CreateDto, tx?: Prisma.TransactionClient): Promise<pt.SAFE_BORROW_TYPE> {
+  async create(data: CreateDto, tx?: Prisma.TransactionClient): Promise<pt.DEFAULT_BORROW_TYPE> {
     return await (tx || this.prisma).borrow.create({
       data,
-      select: pt.SAFE_BORROW_FIELDS,
+      select: pt.DEFAULT_BORROW_FIELDS,
     })
   }
 
@@ -86,11 +86,11 @@ export class BorrowRepository {
    * @param data 更新数据
    * @returns 更新后的书籍借阅
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_BORROW_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_BORROW_TYPE> {
     return await this.prisma.borrow.update({
       where: { id },
       data,
-      select: pt.SAFE_BORROW_FIELDS,
+      select: pt.DEFAULT_BORROW_FIELDS,
     })
   }
 
@@ -114,12 +114,12 @@ export class BorrowRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredBookBorrow = await this.prisma.borrow.update({
+    const data = await this.prisma.borrow.update({
       where: { id },
       data: { deletedAt: null },
       select: pt.SAFE_BORROW_FIELDS,
     })
-    return restoredBookBorrow !== null
+    return data !== null
   }
 
   /**
@@ -127,7 +127,7 @@ export class BorrowRepository {
    * @param data 书籍借阅数据
    * @returns 创建的书籍借阅
    */
-  async borrow(data: CreateDto): Promise<pt.SAFE_BORROW_TYPE> {
+  async borrow(data: CreateDto): Promise<pt.DEFAULT_BORROW_TYPE> {
     return this.prisma.$transaction(async tx => {
       const bookReservation = await this.create(data, tx)
       await this.bookRepository.reserve(bookReservation.bookId, tx)

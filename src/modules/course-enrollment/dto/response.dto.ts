@@ -10,8 +10,7 @@ const CourseEnrollmentItemSchema = z.object({
   teachingId: z.number().describe('教学ID'),
   status: z.string().describe('订阅状态'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class EnrollmentResDto extends createZodDto(ListResSchema(CourseEnrollmentItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(CourseEnrollmentItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(CourseEnrollmentItemSchema)) {}

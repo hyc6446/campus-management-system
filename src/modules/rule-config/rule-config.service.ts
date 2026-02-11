@@ -42,9 +42,7 @@ export class RuleConfigService {
   async findById(id: number): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
     const ruleConfig = await this.ruleConfigRepository.findById(id)
     if (!ruleConfig) {
-      throw new AppException('规则配置不存在', 'RULE_CONFIG_NOT_FOUND', HttpStatus.NOT_FOUND, {
-        id,
-      })
+      throw new AppException('规则配置不存在', 'RULE_CONFIG_NOT_FOUND', HttpStatus.NOT_FOUND)
     }
     return ruleConfig
   }
@@ -66,21 +64,21 @@ export class RuleConfigService {
     return await this.ruleConfigRepository.findByNameAndType(rule, type)
   }
 
-  async create(data: CreateDto) {
+  async create(data: CreateDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
     // 1.检查是否具有创建的权限
     // 2.检查规则配置是否存在
     return this.ruleConfigRepository.create(data)
   }
 
-  async update(id: number, data: UpdateDto) {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_RULE_CONFIG_TYPE> {
     // 1.检查是否具有更新的权限
     // 2.检查规则配置是否存在
     return this.ruleConfigRepository.update(id, data)
   }
 
-  async remove(id: number) {
+  async delete(id: number): Promise<boolean> {
     // 1.检查是否具有删除的权限
     // 2.检查规则配置是否存在
-    return this.ruleConfigRepository.remove(id)
+    return this.ruleConfigRepository.delete(id)
   }
 }

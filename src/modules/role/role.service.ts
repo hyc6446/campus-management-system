@@ -18,14 +18,14 @@ export class RoleService {
    */
   async findById(id: number): Promise<pt.DEFAULT_ROLE_TYPE> {
     const role = await this.roleRepository.findById(id)
-    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
+    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND)
 
     return role
   }
 
   async findByIdWithFull(id: number): Promise<pt.FULL_ROLE_TYPE> {
     const role = await this.roleRepository.findByIdWithFull(id)
-    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
+    if (!role) throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND)
 
     return role
   }
@@ -47,7 +47,7 @@ export class RoleService {
   async findByName(name: string): Promise<pt.DEFAULT_ROLE_TYPE> {
     const role = await this.roleRepository.findByName(name)
     if (!role)
-      throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { name })
+      throw new AppException('角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND)
 
     return role
   }
@@ -61,13 +61,11 @@ export class RoleService {
    * @param createData 角色数据
    * @returns 创建的角色
    */
-  async create(createData: CreateDto): Promise<pt.SAFE_ROLE_TYPE> {
+  async create(createData: CreateDto): Promise<pt.DEFAULT_ROLE_TYPE> {
     // 检查角色名称是否已存在
     const role = await this.roleRepository.findByName(createData.name)
     if (role) {
-      throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT, {
-        roleName: role.name,
-      })
+      throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT)
     }
     return await this.roleRepository.create(createData)
   }
@@ -85,14 +83,12 @@ export class RoleService {
     // 检查待更新的角色是否存在
     const role = await this.roleRepository.findByIdWithSafe(id)
     if (!role) {
-      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
+      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND)
     }
     // 检查待更新的角色名称是否已经存在
     const roleNameExist = await this.roleRepository.findByName(updateData.name)
     if (roleNameExist) {
-      throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT, {
-        roleName: roleNameExist.name,
-      })
+      throw new AppException('角色名称已存在', 'ROLE_NAME_CONFLICT', HttpStatus.CONFLICT)
     }
 
     return await this.roleRepository.update(id, updateData)
@@ -116,9 +112,7 @@ export class RoleService {
     console.log('query:', query)
     const skip = (page - 1) * take
     if (take > 100) {
-      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, {
-        take,
-      })
+      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST)
     }
     const where: Prisma.RoleWhereInput = { deletedAt: null }
     if (id) where.id = id
@@ -139,10 +133,10 @@ export class RoleService {
     // 检查待更新的角色是否存在
     const role = await this.roleRepository.findByIdWithFull(id)
     if (!role) {
-      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
+      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND)
     }
     if (role.deletedAt) {
-      throw new AppException('该角色已停用', 'ROLE_ALREADY_DELETED', HttpStatus.BAD_REQUEST, { id })
+      throw new AppException('该角色已停用', 'ROLE_ALREADY_DELETED', HttpStatus.BAD_REQUEST)
     }
     return await this.roleRepository.delete(id)
   }
@@ -160,10 +154,10 @@ export class RoleService {
     // 检查待更新的角色是否存在
     const role = await this.roleRepository.findByIdWithFull(id)
     if (!role) {
-      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND, { id })
+      throw new AppException('该角色不存在', 'ROLE_NOT_FOUND', HttpStatus.NOT_FOUND)
     }
     if (!role.deletedAt) {
-      throw new AppException('该角色未停用', 'ROLE_NOT_DELETED', HttpStatus.BAD_REQUEST, { id })
+      throw new AppException('该角色未停用', 'ROLE_NOT_DELETED', HttpStatus.BAD_REQUEST)
     }
     return await this.roleRepository.restore(id)
   }

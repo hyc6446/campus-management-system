@@ -1,21 +1,26 @@
+import { RoleType } from '@prisma/client'
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { AuthGuard } from '@app/common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
-import { RoleType } from '@app/modules/role/role.entity'
-import { SeatReservation } from '@app/modules/seat-reservation/seat-reservation.entity'
 import { SeatReservationService } from '@app/modules/seat-reservation/seat-reservation.service'
-import { CreateDto, QueryDto, UpdateDto } from '@app/modules/seat-reservation/dto'
+import {
+  CreateDto,
+  QueryDto,
+  UpdateDto,
+  ListResDto,
+  ResponseDto,
+} from '@app/modules/seat-reservation/dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Post,
   Body,
   Param,
   ParseIntPipe,
-  HttpStatus,
   Get,
   UseGuards,
   Query,
@@ -33,14 +38,7 @@ export class SeatReservationController {
   constructor(private seatReservationService: SeatReservationService) {}
 
   @ApiOperation({ summary: '查询座位预约' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '获取座位预约列表',
-    type: SeatReservation,
-    isArray: true,
-  })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的查询参数' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
+  @ApiOk(ListResDto)
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.SeatReservation })
   @Get()
@@ -49,9 +47,8 @@ export class SeatReservationController {
   }
 
   @ApiOperation({ summary: '获取指定座位预约信息' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取座位预约信息', type: SeatReservation })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该座位预约不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ notFound: true })
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.SeatReservation })
   @Get(':id')
@@ -60,13 +57,8 @@ export class SeatReservationController {
   }
 
   @ApiOperation({ summary: '创建座位预约' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: '座位预约创建成功',
-    type: SeatReservation,
-  })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
+  @ApiCreated(ResponseDto)
+  @ApiResponses({ conflict: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Create, subject: SubjectsEnum.SeatReservation })
   @Post()
@@ -74,24 +66,18 @@ export class SeatReservationController {
     return await this.seatReservationService.create(createData)
   }
   @ApiOperation({ summary: '更新座位预约' })
-  @ApiResponse({ status: HttpStatus.OK, description: '座位预约更新成功', type: SeatReservation })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该座位预约不存在' })
+  @ApiOk(ResponseDto, '更新成功')
+  @ApiResponses({ notFound: true, conflict: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Update, subject: SubjectsEnum.SeatReservation })
   @Put(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updatedata: UpdateDto
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updatedata: UpdateDto) {
     return await this.seatReservationService.update(id, updatedata)
   }
 
   @ApiOperation({ summary: '删除座位预约' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该座位预约不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '座位预约删除成功' })
+  @ApiOk(ResponseDto, '停用成功')
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Delete, subject: SubjectsEnum.SeatReservation })
   @Delete(':id')
@@ -100,10 +86,8 @@ export class SeatReservationController {
   }
 
   @ApiOperation({ summary: '恢复座位预约' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无操作权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该座位预约不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '座位预约恢复成功' })
+  @ApiOk(ResponseDto, '恢复成功')
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Restore, subject: SubjectsEnum.SeatReservation })
   @Put(':id/restore')

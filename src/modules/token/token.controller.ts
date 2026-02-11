@@ -1,5 +1,6 @@
+import { RoleType } from '@prisma/client'
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { AuthGuard } from '@common/guards/auth.guard'
 import { RolesGuard } from '@common/guards/roles.guard'
@@ -7,9 +8,8 @@ import { Roles } from '@common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
 import { TokenService } from './token.service'
 import { Token } from './token.entity'
-import { RoleType } from '@app/modules/role/role.entity'
-import * as pt from '@app/common/prisma-types'
-import { QueryDto } from './dto'
+import { QueryDto, ListResDto, ResponseDto } from './dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Get,
@@ -20,7 +20,6 @@ import {
   Query,
   ParseIntPipe,
   UseInterceptors,
-  HttpStatus,
 } from '@nestjs/common'
 
 @ApiTags('Token管理')
@@ -32,14 +31,7 @@ export class TokenController {
   constructor(private tokenService: TokenService) {}
 
   @ApiOperation({ summary: '获取Token列表' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '获取Token列表',
-    type: [Token],
-    isArray: true,
-  })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Token不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '没有权限访问' })
+  @ApiOk(ListResDto)
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Token, action: Action.Read })
   @Get()
@@ -48,9 +40,8 @@ export class TokenController {
   }
 
   @ApiOperation({ summary: '根据ID获取Token信息' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取Token信息', type: Token })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Token不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '没有权限访问' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ notFound: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Token, action: Action.Read })
   @Get(':id')
@@ -59,9 +50,8 @@ export class TokenController {
   }
 
   @ApiOperation({ summary: '删除单项Token' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Token删除成功' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Token不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '没有权限访问' })
+  @ApiOk(ResponseDto, '停用成功')
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Token, action: Action.Delete })
   @Delete(':id')
@@ -70,9 +60,8 @@ export class TokenController {
   }
 
   @ApiOperation({ summary: '批量删除Token' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Token删除成功' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Token不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '没有权限访问' })
+  @ApiOk(ResponseDto, '停用成功')
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Token, action: Action.Delete })
   @Delete('many')

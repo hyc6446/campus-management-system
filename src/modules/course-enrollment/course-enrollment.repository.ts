@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '@core/prisma/prisma.service'
-import {
-  CreateDto,
-  UpdateDto,
-} from '@app/modules/course-enrollment/dto'
+import { CreateDto, UpdateDto } from '@app/modules/course-enrollment/dto'
 import * as pt from '@app/common/prisma-types'
 
 @Injectable()
@@ -26,19 +23,14 @@ export class CourseEnrollmentRepository {
     skip: number,
     where: Prisma.CourseEnrollmentWhereInput,
     orderBy: Prisma.CourseEnrollmentOrderByWithRelationInput
-  ): Promise<{
-    data: pt.SAFE_COURSE_ENROLLMENT_TYPE[]
-    total: number
-    page: number
-    take: number
-  }> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_COURSE_ENROLLMENT_TYPE>> {
     const [data, total] = await Promise.all([
       this.prisma.courseEnrollment.findMany({
         where,
         skip,
         take,
         orderBy,
-        select: pt.SAFE_COURSE_ENROLLMENT_FIELDS,
+        select: pt.DEFAULT_COURSE_ENROLLMENT_FIELDS,
       }),
       this.prisma.courseEnrollment.count({ where }),
     ])
@@ -110,10 +102,10 @@ export class CourseEnrollmentRepository {
    * @param data 课程订阅数据
    * @returns 创建的课程订阅
    */
-  async create(data: CreateDto): Promise<pt.SAFE_COURSE_ENROLLMENT_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_COURSE_ENROLLMENT_TYPE> {
     return this.prisma.courseEnrollment.create({
       data,
-      select: pt.SAFE_COURSE_ENROLLMENT_FIELDS,
+      select: pt.DEFAULT_COURSE_ENROLLMENT_FIELDS,
     })
   }
 
@@ -123,14 +115,11 @@ export class CourseEnrollmentRepository {
    * @param data 更新数据
    * @returns 更新后的课程订阅
    */
-  async update(
-    id: number,
-    data: UpdateDto
-  ): Promise<pt.SAFE_COURSE_ENROLLMENT_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_COURSE_ENROLLMENT_TYPE> {
     return this.prisma.courseEnrollment.update({
       where: { id },
       data,
-      select: pt.SAFE_COURSE_ENROLLMENT_FIELDS,
+      select: pt.DEFAULT_COURSE_ENROLLMENT_FIELDS,
     })
   }
 
@@ -140,12 +129,11 @@ export class CourseEnrollmentRepository {
    * @returns 是否删除成功
    */
   async delete(id: number): Promise<boolean> {
-    const deletedCourse = await this.prisma.courseEnrollment.update({
+    const data = await this.prisma.courseEnrollment.update({
       where: { id },
       data: { deletedAt: new Date() },
-      select: pt.SAFE_COURSE_ENROLLMENT_FIELDS,
     })
-    return deletedCourse !== null
+    return data !== null
   }
 
   /**
@@ -154,11 +142,10 @@ export class CourseEnrollmentRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredCourse = await this.prisma.courseEnrollment.update({
+    const data = await this.prisma.courseEnrollment.update({
       where: { id },
       data: { deletedAt: null },
-      select: pt.SAFE_COURSE_ENROLLMENT_FIELDS,
     })
-    return restoredCourse !== null
+    return data !== null
   }
 }

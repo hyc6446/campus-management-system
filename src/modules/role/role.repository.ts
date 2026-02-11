@@ -57,26 +57,26 @@ export class RoleRepository {
   }
   /**
    * 创建新角色
-   * @param roleData 角色数据
+   * @param data 角色数据
    * @returns 创建的角色
    */
-  async create(roleData: CreateDto): Promise<pt.SAFE_ROLE_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_ROLE_TYPE> {
     return await this.prisma.role.create({
-      data: roleData,
-      select: pt.SAFE_ROLE_FIELDS,
+      data,
+      select: pt.DEFAULT_ROLE_FIELDS,
     })
   }
 
   /**
    * 更新角色
    * @param id 角色ID
-   * @param updateData 更新数据
+   * @param data 更新数据
    * @returns 更新后的角色
    */
-  async update(id: number, updateData: UpdateDto): Promise<pt.DEFAULT_ROLE_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_ROLE_TYPE> {
     return await this.prisma.role.update({
       where: { id },
-      data: updateData,
+      data,
       select: pt.DEFAULT_ROLE_FIELDS,
     })
   }
@@ -117,11 +117,11 @@ export class RoleRepository {
    * @param id 角色ID
    */
   async delete(id: number): Promise<boolean> {
-    const deleteRole = await this.prisma.role.update({
+    const data = await this.prisma.role.update({
       where: { id },
       data: { deletedAt: new Date() },
     })
-    return deleteRole.deletedAt !== null
+    return data.deletedAt !== null
   }
 
   /**
@@ -130,10 +130,10 @@ export class RoleRepository {
    * @returns 恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoreRole = await this.prisma.role.update({
+    const data = await this.prisma.role.update({
       where: { id },
       data: { deletedAt: null },
     })
-    return restoreRole.deletedAt === null
+    return data.deletedAt === null
   }
 }

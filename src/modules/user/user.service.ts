@@ -1,7 +1,7 @@
+import { Prisma } from '@prisma/client'
 import { Injectable, HttpStatus } from '@nestjs/common'
 import { UserRepository } from './user.repository'
-import { CreateDto, UpdateDto, QueryDto, UsersResDto, ResponseDto } from './dto'
-import type { Prisma, User } from '@prisma/client'
+import { CreateDto, UpdateDto, QueryDto, ResponseDto } from './dto'
 import * as pt from '@app/common/prisma-types'
 import { AppException } from '@app/common/exceptions/app.exception'
 
@@ -95,13 +95,13 @@ export class UserService {
    * @param filters 过滤条件
    * @returns 分页结果
    */
-  async findAll(query: QueryDto) {
+  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.USER_ROLE_DEFAULT_TYPE>> {
     // 非管理员只能看到自己的信息
     const {
       page = 1,
       limit: take = 10,
-      sortBy = 'createAt',
-      order = 'desc',
+      sortBy,
+      order,
       id,
       email,
       userName,
@@ -109,12 +109,10 @@ export class UserService {
       roleId,
       createdAt,
     } = query
-    const skip = (page - 1) * take
     if (take > 100) {
-      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, {
-        take,
-      })
+      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST)
     }
+    const skip = (page - 1) * take
     const where: Prisma.UserWhereInput = {}
     if (id) where.id = id
     if (email) where.email = { contains: email }
@@ -142,8 +140,8 @@ export class UserService {
     if (user.roleId !== 1 || Number(user.id) == id) {
       throw new AppException('无权限停用用户', 'FORBIDDEN', HttpStatus.FORBIDDEN)
     }
-
-    return await this.userRepository.delete(id)
+    const data = await this.userRepository.delete(id)
+    return data !== null
   }
 
   /**

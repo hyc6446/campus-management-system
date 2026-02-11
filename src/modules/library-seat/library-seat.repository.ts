@@ -23,9 +23,9 @@ export class LibrarySeatRepository {
     skip: number,
     where: Prisma.LibrarySeatWhereInput,
     orderBy: Prisma.LibrarySeatOrderByWithRelationInput
-  ): Promise<{ data: pt.SAFE_LIBRARY_SEAT_TYPE[]; total: number; page: number; take: number }> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_LIBRARY_SEAT_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.librarySeat.findMany({ where, skip, take, orderBy, select: pt.SAFE_LIBRARY_SEAT_FIELDS }),
+      this.prisma.librarySeat.findMany({ where, skip, take, orderBy, select: pt.DEFAULT_LIBRARY_SEAT_FIELDS }),
       this.prisma.librarySeat.count({ where }),
     ])
     return { data, total, page, take }
@@ -82,10 +82,10 @@ export class LibrarySeatRepository {
    * @param data 图书馆座位数据
    * @returns 创建的图书馆座位
    */
-  async create(data: CreateDto): Promise<pt.SAFE_LIBRARY_SEAT_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_LIBRARY_SEAT_TYPE> {
     return this.prisma.librarySeat.create({
       data,
-      select: pt.SAFE_LIBRARY_SEAT_FIELDS,
+      select: pt.DEFAULT_LIBRARY_SEAT_FIELDS,
     })
   }
 
@@ -95,11 +95,11 @@ export class LibrarySeatRepository {
    * @param data 更新数据
    * @returns 更新后的图书馆座位
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_LIBRARY_SEAT_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_LIBRARY_SEAT_TYPE> {
     return this.prisma.librarySeat.update({
       where: { id },
       data,
-      select: pt.SAFE_LIBRARY_SEAT_FIELDS,
+      select: pt.DEFAULT_LIBRARY_SEAT_FIELDS,
     })
   }
 
@@ -109,12 +109,11 @@ export class LibrarySeatRepository {
    * @returns 是否删除成功
    */
   async delete(id: number): Promise<boolean> {
-    const deletedLibrarySeat = await this.prisma.librarySeat.update({
+    const data = await this.prisma.librarySeat.update({
       where: { id },
       data: { deletedAt: new Date() },
-      select: pt.SAFE_LIBRARY_SEAT_FIELDS,
     })
-    return deletedLibrarySeat !== null
+    return data !== null
   }
 
   /**
@@ -123,10 +122,10 @@ export class LibrarySeatRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredLibrarySeat = await this.prisma.librarySeat.update({
+    const data = await this.prisma.librarySeat.update({
       where: { id },
       data: { deletedAt: null },
     })
-    return restoredLibrarySeat !== null
+    return data !== null
   }
 }

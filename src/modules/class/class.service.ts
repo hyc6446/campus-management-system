@@ -16,7 +16,7 @@ export class ClassService {
    */
   async findAll(
     query: QueryDto
-  ): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_CLASS_TYPE>> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_CLASS_TYPE>> {
     const {
       page = 1,
       limit: take = 10,
@@ -61,7 +61,7 @@ export class ClassService {
    * @param data 班级数据
    * @returns 创建的班级
    */
-  async create(data: CreateDto): Promise<pt.SAFE_CLASS_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_CLASS_TYPE> {
     const existingClass = await this.classRepository.findByNameOptional(data.name)
     if (existingClass) throw new AppException('班级已存在', 'Class_Exist', HttpStatus.BAD_REQUEST)
     return this.classRepository.create(data)
@@ -73,7 +73,7 @@ export class ClassService {
    * @param data 更新数据
    * @returns 更新后的班级
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_CLASS_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_CLASS_TYPE> {
     // 检查班级是否存在
     const updatedata = await this.classRepository.findByIdOptionalWithFull(id)
     if (!updatedata) throw new AppException('班级不存在', 'Class_No_Found', HttpStatus.NOT_FOUND)

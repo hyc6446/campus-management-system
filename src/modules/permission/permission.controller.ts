@@ -5,16 +5,16 @@ import { AuthGuard } from '@app/common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
-import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { PermissionService } from '@app/modules/permission/permission.service'
 import {
   CreateDto,
   QueryDto,
   UpdateDto,
-  PermissionsResDto,
+  ListResDto,
   ResponseDto,
 } from '@app/modules/permission/dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Post,
@@ -38,7 +38,7 @@ export class PermissionController {
   constructor(private permissionService: PermissionService) {}
 
   @ApiOperation({ summary: '查询权限列表' })
-  @ApiOk(PermissionsResDto)
+  @ApiOk(ListResDto)
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.Permission })
   @Get()
@@ -77,7 +77,7 @@ export class PermissionController {
 
   @ApiOperation({ summary: '停用权限' })
   @ApiOk(ResponseDto, '停用成功')
-  @ApiResponses({ notFound: true, conflict: true })
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Delete, subject: SubjectsEnum.Permission })
   @Delete(':id')
@@ -87,7 +87,7 @@ export class PermissionController {
 
   @ApiOperation({ summary: '恢复权限' })
   @ApiOk(ResponseDto, '恢复成功')
-  @ApiResponses({ notFound: true, conflict: true })
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Restore, subject: SubjectsEnum.Permission })
   @Put(':id/restore')

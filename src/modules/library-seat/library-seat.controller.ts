@@ -1,21 +1,21 @@
+import { RoleType } from '@prisma/client'
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { AuthGuard } from '@app/common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
-import { RoleType } from '@app/modules/role/role.entity'
 import { LibrarySeat } from '@app/modules/library-seat/library-seat.entity'
 import { LibrarySeatService } from '@app/modules/library-seat/library-seat.service'
-import { CreateDto, QueryDto, UpdateDto } from '@app/modules/library-seat/dto'
+import { CreateDto, QueryDto, UpdateDto, ListResDto, ResponseDto } from '@app/modules/library-seat/dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Post,
   Body,
   Param,
   ParseIntPipe,
-  HttpStatus,
   Get,
   UseGuards,
   Query,
@@ -33,14 +33,7 @@ export class LibrarySeatController {
   constructor(private librarySeatService: LibrarySeatService) {}  
 
   @ApiOperation({ summary: '查询图书馆座位' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '获取图书馆座位列表',
-    type: LibrarySeat,
-    isArray: true,
-  })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的查询参数' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
+  @ApiOk(ListResDto)
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.LibrarySeat })
   @Get()
@@ -49,9 +42,7 @@ export class LibrarySeatController {
   }
 
   @ApiOperation({ summary: '获取指定图书馆座位信息' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取图书馆座位信息', type: LibrarySeat })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书馆座位不存在' }) 
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  @ApiOk(ResponseDto)
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.LibrarySeat })
   @Get(':id')
@@ -60,9 +51,8 @@ export class LibrarySeatController {
   }
 
   @ApiOperation({ summary: '创建图书馆座位' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '图书馆座位创建成功', type: LibrarySeat })  
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
+  @ApiCreated(ResponseDto)
+  @ApiResponses({ conflict: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Create, subject: SubjectsEnum.LibrarySeat })
   @Post()
@@ -70,9 +60,8 @@ export class LibrarySeatController {
     return await this.librarySeatService.create(createData)
   }
   @ApiOperation({ summary: '更新图书馆座位' })
-  @ApiResponse({ status: HttpStatus.OK, description: '图书馆座位更新成功', type: LibrarySeat })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书馆座位不存在' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Update, subject: SubjectsEnum.LibrarySeat })
   @Put(':id')
@@ -81,10 +70,8 @@ export class LibrarySeatController {
   }
 
   @ApiOperation({ summary: '删除图书馆座位' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书馆座位不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '图书馆座位删除成功' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Delete, subject: SubjectsEnum.LibrarySeat })
   @Delete(':id')
@@ -93,10 +80,8 @@ export class LibrarySeatController {
   }
 
   @ApiOperation({ summary: '恢复图书馆座位' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无操作权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书馆座位不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '图书馆座位恢复成功' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Restore, subject: SubjectsEnum.LibrarySeat })
   @Put(':id/restore')

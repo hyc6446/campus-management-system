@@ -56,7 +56,7 @@ export class PermissionService {
    * @param data 权限数据
    * @returns 创建的权限
    */
-  async create(data: CreateDto): Promise<pt.SAFE_PERMISSION_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_PERMISSION_TYPE> {
     const { action, subject, roleId } = data
 
     // 检查action、subject是否已被定义了
@@ -143,7 +143,7 @@ export class PermissionService {
    * @param currentUser 当前用户
    * @throws ForbiddenException 无权限
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: number): Promise<boolean> {
     // 检查待删除的权限是否存在
     const isExist = await this.permissionRepository.findByIdWithFull(id)
     if (!isExist) {
@@ -159,7 +159,7 @@ export class PermissionService {
       throw new AppException('该权限已停用', 'PERMISSION_DELETED', HttpStatus.CONFLICT)
     }
 
-    await this.permissionRepository.delete(id)
+    return await this.permissionRepository.delete(id)
   }
 
   /**

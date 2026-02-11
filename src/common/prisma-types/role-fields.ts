@@ -7,11 +7,11 @@ const ROLE_TABLE_FIELDS = [ "id", "name", "createdAt", "updatedAt", "deletedAt"]
 const DEFAULT_ROLE_FIELDS = {
   id: true,
   name: true,
+  createdAt: true,
 } satisfies Prisma.RoleSelect;
 
 const SAFE_ROLE_FIELDS = {
   ...DEFAULT_ROLE_FIELDS,
-  createdAt: true,
   updatedAt: true,
 } satisfies Prisma.RoleSelect;
 

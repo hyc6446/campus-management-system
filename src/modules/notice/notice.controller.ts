@@ -1,16 +1,14 @@
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { AuthGuard } from '@app/common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
-import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
-import { RoleType } from '@app/modules/role/role.entity'
-import { SystemNotice } from '@app/modules/notice/notice.entity'
+import { RoleType } from '@prisma/client'
 import { NoticeService } from '@app/modules/notice/notice.service'
-import { ErrResDto } from '@app/common/validators/zod-validators'
-import { CreateDto, QueryDto, UpdateDto, NoticesResDto, ResponseDto } from '@app/modules/notice/dto'
+import { CreateDto, QueryDto, UpdateDto, ListResDto, ResponseDto } from '@app/modules/notice/dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Post,
@@ -35,7 +33,7 @@ export class NoticeController {
   constructor(private noticeService: NoticeService) {}
 
   @ApiOperation({ summary: '查询公告' })
-  @ApiOk(NoticesResDto)
+  @ApiOk(ListResDto)
   // @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.Notice })
   @Get()
@@ -54,7 +52,7 @@ export class NoticeController {
 
   @ApiOperation({ summary: '创建公告' })
   @ApiCreated(ResponseDto)
-  @ApiResponses({ notFound: true, conflict: true })
+  @ApiResponses({ conflict: true })
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ action: Action.Create, subject: SubjectsEnum.Notice })
   @Post()
@@ -73,7 +71,7 @@ export class NoticeController {
 
   @ApiOperation({ summary: '删除公告' })
   @ApiOk(ResponseDto, '停用成功')
-  @ApiResponses({ notFound: true, conflict: true })
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Delete, subject: SubjectsEnum.Notice })
   @Delete(':id')
@@ -83,7 +81,7 @@ export class NoticeController {
 
   @ApiOperation({ summary: '恢复公告' })
   @ApiOk(ResponseDto, '恢复成功')
-  @ApiResponses({ notFound: true, conflict: true })
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Restore, subject: SubjectsEnum.Notice })
   @Put(':id/restore')

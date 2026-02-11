@@ -1,12 +1,19 @@
+import { RoleType } from '@prisma/client'
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { AuthGuard } from '@app/common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/roles.decorator'
-import { RuleConfig } from '@app/modules/rule-config/rule-config.entity'
-import { RoleType } from '@app/modules/role/role.entity'
 import { RuleConfigService } from '@app/modules/rule-config/rule-config.service'
-import { CreateDto, UpdateDto, QueryDto } from '@app/modules/rule-config/dto'
+import {
+  CreateDto,
+  UpdateDto,
+  QueryDto,
+  ListResDto,
+  ResponseDto,
+} from '@app/modules/rule-config/dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
+
 import {
   Controller,
   Get,
@@ -17,7 +24,6 @@ import {
   Param,
   Query,
   UseGuards,
-  HttpStatus,
   ParseIntPipe,
   UseInterceptors,
 } from '@nestjs/common'
@@ -31,8 +37,7 @@ export class RuleConfigController {
   constructor(private readonly ruleConfigService: RuleConfigService) {}
 
   @ApiOperation({ summary: '查询配置项列表' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: RuleConfig, isArray: true })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '查询参数错误' })
+  @ApiOk(ListResDto)
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Get()
   async findAll(@Query() query: QueryDto) {
@@ -40,9 +45,8 @@ export class RuleConfigController {
   }
 
   @ApiOperation({ summary: '查询配置项详情' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: RuleConfig })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '查询参数错误' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '配置项不存在' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ notFound: true })
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -50,10 +54,8 @@ export class RuleConfigController {
   }
 
   @ApiOperation({ summary: '创建配置项' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: RuleConfig })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '查询参数错误' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '配置项不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  @ApiCreated(ResponseDto)
+  @ApiResponses({ notFound: true, conflict: true })
   @Roles(RoleType.ADMIN)
   @Post()
   async create(@Body() createDto: CreateDto) {
@@ -61,27 +63,20 @@ export class RuleConfigController {
   }
 
   @ApiOperation({ summary: '更新配置项' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: RuleConfig })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '查询参数错误' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '配置项不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  @ApiOk(ResponseDto, '更新成功')
+  @ApiResponses({ notFound: true, conflict: true })
   @Roles(RoleType.ADMIN)
   @Put(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateRuleConfigDto: UpdateDto
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateRuleConfigDto: UpdateDto) {
     return await this.ruleConfigService.update(id, updateRuleConfigDto)
   }
 
   @ApiOperation({ summary: '删除配置项' })
-  @ApiResponse({ status: HttpStatus.OK, description: '查询成功', type: RuleConfig })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '查询参数错误' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '配置项不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  @ApiOk(ResponseDto, '停用成功')
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return await this.ruleConfigService.remove(id)
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    return await this.ruleConfigService.delete(id)
   }
 }

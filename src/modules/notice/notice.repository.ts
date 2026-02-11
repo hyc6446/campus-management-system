@@ -23,9 +23,9 @@ export class NoticeRepository {
     skip: number,
     where: Prisma.SystemNoticeWhereInput,
     orderBy: Prisma.SystemNoticeOrderByWithRelationInput
-  ): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_NOTICE_TYPE>> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_NOTICE_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.systemNotice.findMany({ where, skip, take, orderBy, select: pt.SAFE_SYSTEM_NOTICE_FIELDS }),
+      this.prisma.systemNotice.findMany({ where, skip, take, orderBy, select: pt.DEFAULT_SYSTEM_NOTICE_FIELDS }),
       this.prisma.systemNotice.count({ where }),
     ])
     return { data, total, page, take }
@@ -82,10 +82,10 @@ export class NoticeRepository {
    * @param data 公告数据
    * @returns 创建的公告
    */
-  async create(data: CreateDto): Promise<pt.SAFE_NOTICE_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_NOTICE_TYPE> {
     return this.prisma.systemNotice.create({
       data,
-      select: pt.SAFE_SYSTEM_NOTICE_FIELDS,
+      select: pt.DEFAULT_SYSTEM_NOTICE_FIELDS,
     })
   }
 
@@ -95,11 +95,11 @@ export class NoticeRepository {
    * @param data 更新数据
    * @returns 更新后的公告
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_NOTICE_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_NOTICE_TYPE> {
     return this.prisma.systemNotice.update({
       where: { id },
       data,
-      select: pt.SAFE_SYSTEM_NOTICE_FIELDS,
+      select: pt.DEFAULT_SYSTEM_NOTICE_FIELDS,
     })
   }
 
@@ -109,12 +109,11 @@ export class NoticeRepository {
    * @returns 是否删除成功
    */
   async delete(id: number): Promise<boolean> {
-    const deletedNotice = await this.prisma.systemNotice.update({
+    const data = await this.prisma.systemNotice.update({
       where: { id },
       data: { deletedAt: new Date() },
-      select: pt.SAFE_SYSTEM_NOTICE_FIELDS,
     })
-    return deletedNotice !== null
+    return data !== null
   }
 
   /**
@@ -123,11 +122,10 @@ export class NoticeRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredNotice = await this.prisma.systemNotice.update({
+    const data = await this.prisma.systemNotice.update({
       where: { id },
       data: { deletedAt: null },
-      select: pt.SAFE_SYSTEM_NOTICE_FIELDS,
     })
-    return restoredNotice !== null
+    return data !== null
   }
 }

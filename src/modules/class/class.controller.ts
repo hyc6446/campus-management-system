@@ -1,21 +1,20 @@
+import { RoleType } from '@prisma/client'
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { AuthGuard } from '@app/common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
-import { RoleType } from '@app/modules/role/role.entity'
-import { Class } from '@app/modules/class/class.entity'
 import { ClassService } from '@app/modules/class/class.service'
-import { CreateDto, QueryDto, UpdateDto } from '@app/modules/class/dto'
+import { CreateDto, QueryDto, UpdateDto, ListResDto, ResponseDto } from '@app/modules/class/dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Post,
   Body,
   Param,
   ParseIntPipe,
-  HttpStatus,
   Get,
   UseGuards,
   Query,
@@ -33,15 +32,8 @@ export class ClassController {
   constructor(private classService: ClassService) {}
 
   @ApiOperation({ summary: '查询班级' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '获取班级列表',
-    type: Class,
-    isArray: true,
-  })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的查询参数' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
-//   @Roles(RoleType.ADMIN, RoleType.TEACHER, RoleType.STUDENT)
+  @ApiOk(ListResDto)
+  //   @Roles(RoleType.ADMIN, RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.Class })
   @Get()
   async findAll(@Query() query: QueryDto) {
@@ -49,10 +41,8 @@ export class ClassController {
   }
 
   @ApiOperation({ summary: '获取指定班级信息' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取班级信息', type: Class })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该班级不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-//   @Roles(RoleType.ADMIN, RoleType.TEACHER, RoleType.STUDENT)
+  @ApiOk(ResponseDto)
+  //   @Roles(RoleType.ADMIN, RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.Class })
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -60,9 +50,7 @@ export class ClassController {
   }
 
   @ApiOperation({ summary: '创建班级' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '班级创建成功', type: Class })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
+  @ApiCreated(ResponseDto)
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Create, subject: SubjectsEnum.Class })
   @Post()
@@ -70,9 +58,8 @@ export class ClassController {
     return await this.classService.create(createData)
   }
   @ApiOperation({ summary: '更新班级' })
-  @ApiResponse({ status: HttpStatus.OK, description: '班级更新成功', type: Class })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该班级不存在' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Update, subject: SubjectsEnum.Class })
   @Put(':id')
@@ -81,10 +68,8 @@ export class ClassController {
   }
 
   @ApiOperation({ summary: '删除班级' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该班级不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '班级删除成功' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Delete, subject: SubjectsEnum.Class })
   @Delete(':id')
@@ -93,10 +78,8 @@ export class ClassController {
   }
 
   @ApiOperation({ summary: '恢复班级' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无操作权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该班级不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '班级恢复成功' })      
+  @ApiOk(ResponseDto)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ action: Action.Restore, subject: SubjectsEnum.Class })
   @Put(':id/restore')

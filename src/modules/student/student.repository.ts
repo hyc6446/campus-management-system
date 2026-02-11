@@ -23,9 +23,9 @@ export class StudentRepository {
     skip: number,
     where: Prisma.StudentWhereInput,
     orderBy: Prisma.StudentOrderByWithRelationInput
-  ): Promise<{ data: pt.SAFE_STUDENT_TYPE[]; total: number; page: number; take: number }> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_STUDENT_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.student.findMany({ where, skip, take, orderBy, select: pt.SAFE_STUDENT_FIELDS }),
+      this.prisma.student.findMany({ where, skip, take, orderBy, select: pt.DEFAULT_STUDENT_FIELDS }),
       this.prisma.student.count({ where }),
     ])
     return { data, total, page, take }
@@ -54,38 +54,16 @@ export class StudentRepository {
       select: pt.FULL_STUDENT_FIELDS,
     })
   }
-  /**
-   * 根据名称获取学生（可选）
-   * @param name 学生名称
-   * @returns 学生详情或null  
-   */
-  // async findByNameOptional(name: string): Promise<pt.DEFAULT_STUDENT_TYPE | null> {
-  //   return this.prisma.student.findUnique({
-  //     where: { name, deletedAt: null },
-  //     select: pt.DEFAULT_STUDENT_FIELDS,
-  //   })
-  // }
-  // async findByNameOptionalWithSafe(name: string): Promise<pt.SAFE_STUDENT_TYPE | null> {
-  //   return this.prisma.student.findUnique({
-  //     where: { name, deletedAt: null },
-  //     select: pt.SAFE_STUDENT_FIELDS,
-  //   })
-  // }
-  // async findByNameOptionalWithFull(name: string): Promise<pt.FULL_STUDENT_TYPE | null> {
-  //   return this.prisma.student.findUnique({
-  //     where: { name, deletedAt: null },
-  //     select: pt.FULL_STUDENT_FIELDS,    
-  //   })
-  // }
+
   /**
    * 创建新课程
    * @param data 课程数据
    * @returns 创建的课程
    */
-  async create(data: CreateDto): Promise<pt.SAFE_STUDENT_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_STUDENT_TYPE> {
     return this.prisma.student.create({
       data,
-      select: pt.SAFE_STUDENT_FIELDS,
+      select: pt.DEFAULT_STUDENT_FIELDS,
     })
   }
 
@@ -95,11 +73,11 @@ export class StudentRepository {
    * @param data 更新数据
    * @returns 更新后的学生
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_STUDENT_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_STUDENT_TYPE> {
     return this.prisma.student.update({
       where: { id },
       data,
-      select: pt.SAFE_STUDENT_FIELDS,
+      select: pt.DEFAULT_STUDENT_FIELDS,
     })
   }
 
@@ -109,12 +87,11 @@ export class StudentRepository {
    * @returns 是否删除成功
    */
   async delete(id: number): Promise<boolean> {
-    const deletedStudent = await this.prisma.student.update({
+    const data = await this.prisma.student.update({
       where: { id },
       data: { deletedAt: new Date() },
-      select: pt.SAFE_STUDENT_FIELDS,
     })
-    return deletedStudent !== null
+    return data !== null
   }
 
   /**
@@ -123,11 +100,10 @@ export class StudentRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredStudent = await this.prisma.student.update({
+    const data = await this.prisma.student.update({
       where: { id },
       data: { deletedAt: null },
-      select: pt.SAFE_STUDENT_FIELDS,
     })
-    return restoredStudent !== null
+    return data !== null
   }
 }

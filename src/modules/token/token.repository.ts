@@ -14,9 +14,9 @@ export class TokenRepository {
     skip: number,
     where: Prisma.TokenWhereInput,
     orderBy: Prisma.TokenOrderByWithRelationInput
-  ) {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_TOKEN_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.token.findMany({ where, skip, take, orderBy }),
+      this.prisma.token.findMany({ where, skip, take, orderBy, select: pt.DEFAULT_TOKEN_FIELDS }),
       this.prisma.token.count({ where }),
     ])
 
@@ -65,11 +65,11 @@ export class TokenRepository {
    * @returns 删除结果
    */
   async delete(id: number): Promise<boolean> {
-    const deleteData = await this.prisma.token.update({
+    const data = await this.prisma.token.update({
       where: { id },
       data: { deletedAt: new Date() },
     })
-    return deleteData.deletedAt !== null
+    return data.deletedAt !== null
   }
 
   /**
@@ -78,11 +78,11 @@ export class TokenRepository {
    * @returns 删除结果
    */
   async deleteMany(ids: number[]): Promise<boolean> {
-    const deleteData = await this.prisma.token.updateMany({
+    const data = await this.prisma.token.updateMany({
       where: { id: { in: ids } },
       data: { deletedAt: new Date() },
     })
-    return deleteData.count > 0
+    return data.count > 0
   }
   /**
    * 根据用户ID删除Token
@@ -91,10 +91,10 @@ export class TokenRepository {
    * @returns 删除结果
    */
   async deleteByUserId(id: number, tokenType: TokenType): Promise<boolean> {
-    const deleteData = await this.prisma.token.updateMany({
+    const data = await this.prisma.token.updateMany({
       where: { userId: id, type: tokenType },
       data: { deletedAt: new Date() },
     })
-    return deleteData.count > 0
+    return data.count > 0
   }
 }

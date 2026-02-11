@@ -9,6 +9,7 @@ export class Borrow {
   dueDate: Date
   returnDate?: Date
 
+  
   constructor(partial: Partial<Borrow>) {
     this.id = partial.id || 0
     this.bookId = partial.bookId || 0

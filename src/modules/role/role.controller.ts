@@ -1,15 +1,15 @@
+import { RoleType } from '@prisma/client'
 import { ZodSerializerInterceptor } from 'nestjs-zod'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { AuthGuard } from '@common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
-import { ErrResDto } from '@app/common/validators/zod-validators'
-import { Role, RoleType } from '@app/modules/role/role.entity'
+import { Role } from '@app/modules/role/role.entity'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { RoleService } from './role.service'
-import * as pt from '@app/common/prisma-types'
-import { UpdateDto, CreateDto, QueryDto, RolesResDto, RoleResDto } from './dto/index'
+import { UpdateDto, CreateDto, QueryDto, ListResDto, ResponseDto } from './dto/index'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Post,
@@ -20,7 +20,6 @@ import {
   Body,
   Query,
   UseGuards,
-  HttpStatus,
   ParseIntPipe,
   UseInterceptors,
 } from '@nestjs/common'
@@ -34,20 +33,17 @@ export class RoleController {
   constructor(private roleService: RoleService) {}
 
   @ApiOperation({ summary: '查询角色' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取角色列表', type: RolesResDto })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '错误请求', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限', type: ErrResDto })
+  @ApiOk(ListResDto)
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ subject: SubjectsEnum.Role, action: Action.Read })
   @Get()
-  async findAll(@Query() query: QueryDto) { 
+  async findAll(@Query() query: QueryDto) {
     return await this.roleService.findAll(query)
   }
 
   @ApiOperation({ summary: '获取指定角色信息' })
-  @ApiResponse({ status: HttpStatus.OK, description: '成功获取角色信息', type: RoleResDto })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在', type: ErrResDto })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ notFound: true })
   @Roles(RoleType.ADMIN, RoleType.TEACHER)
   @Permissions({ subject: SubjectsEnum.Role, action: Action.Read })
   @Get(':id')
@@ -56,10 +52,8 @@ export class RoleController {
   }
 
   @ApiOperation({ summary: '创建角色' })
-  @ApiResponse({ status: HttpStatus.OK, description: '角色创建成功', type: Role })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: '角色名称已存在', type: ErrResDto })
+  @ApiCreated(ResponseDto)
+  @ApiResponses({ notFound: true, conflict: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Role, action: Action.Create })
   @Post()
@@ -68,20 +62,16 @@ export class RoleController {
   }
 
   @ApiOperation({ summary: '更新角色' })
-  @ApiResponse({ status: HttpStatus.OK, description: '角色更新成功', type: Role })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: '角色名称已存在', type: ErrResDto })
+  @ApiOk(ResponseDto, '更新成功')
+  @ApiResponses({ notFound: true, conflict: true })
   @Put(':id')
   async update(@Param('id', ParseIntPipe) id: number, @Body() updateData: UpdateDto) {
     return await this.roleService.update(id, updateData)
   }
 
   @ApiOperation({ summary: '停用角色' })
-  @ApiResponse({ status: HttpStatus.OK, description: '角色删除成功' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在', type: ErrResDto })
+  @ApiOk(ResponseDto, '停用成功')
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Role, action: Action.Delete })
   @Delete(':id')
@@ -90,10 +80,8 @@ export class RoleController {
   }
 
   @ApiOperation({ summary: '恢复角色' })
-  @ApiResponse({ status: HttpStatus.OK, description: '角色恢复成功' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无操作权限', type: ErrResDto })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '角色不存在', type: ErrResDto })
+  @ApiOk(ResponseDto, '恢复成功')
+  @ApiResponses({ notFound: true, conflict: true, gone: true })
   @Roles(RoleType.ADMIN)
   @Permissions({ subject: SubjectsEnum.Role, action: Action.Restore })
   @Put(':id/restore')

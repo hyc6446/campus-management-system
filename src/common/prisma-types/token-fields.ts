@@ -17,6 +17,7 @@ const DEFAULT_TOKEN_FIELDS = {
   id: true,
   userId: true,
   type: true,
+  expiresAt: true,
   createdAt: true,
 } satisfies Prisma.TokenSelect
 
@@ -28,7 +29,6 @@ const SAFE_TOKEN_FIELDS = {
 const FULL_TOKEN_FIELDS = {
   ...SAFE_TOKEN_FIELDS,
   token: true,
-  expiresAt: true,
   deletedAt: true,
 } satisfies Prisma.TokenSelect
 

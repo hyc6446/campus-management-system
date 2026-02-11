@@ -87,10 +87,10 @@ export class PermissionRepository {
    * @param permissionData 权限数据
    * @returns 创建的权限
    */
-  async create(data: CreateDto): Promise<pt.SAFE_PERMISSION_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_PERMISSION_TYPE> {
     return await this.prisma.permission.create({
       data,
-      select: pt.SAFE_PERMISSION_FIELDS,
+      select: pt.DEFAULT_PERMISSION_FIELDS,
     })
   }
 
@@ -143,11 +143,11 @@ export class PermissionRepository {
    * @param id 权限ID
    */
   async delete(id: number): Promise<boolean> {
-    const deletedPermission = await this.prisma.permission.update({
+    const data = await this.prisma.permission.update({
       where: { id },
       data: { deletedAt: new Date() },
     })
-    return deletedPermission !== null
+    return data !== null
   }
 
   /**
@@ -155,10 +155,10 @@ export class PermissionRepository {
    * @param id 权限ID
    */
   async restore(id: number): Promise<boolean> {
-    const restoredPermission = await this.prisma.permission.update({
+    const data = await this.prisma.permission.update({
       where: { id },
       data: { deletedAt: null },
     })
-    return restoredPermission !== null
+    return data !== null
   }
 }

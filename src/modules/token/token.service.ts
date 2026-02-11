@@ -53,24 +53,13 @@ export class TokenService {
    * @param query 查询参数
    * @returns Token列表
    */
-  async findAll(query: QueryDto) {
-    const {
-      page = 1,
-      limit: take = 10,
-      sortBy = 'createAt',
-      order = 'desc',
-      id,
-      userId,
-      type,
-      deletedAt,
-    } = query
+  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_TOKEN_TYPE>> {
+    const { page = 1, limit: take = 10, sortBy, order, id, userId, type, deletedAt } = query
 
-    const skip = (page - 1) * take
     if (take > 100) {
-      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST, {
-        take,
-      })
+      throw new AppException('每页数量不能超过100', 'LIMIT_EXCEED', HttpStatus.BAD_REQUEST)
     }
+    const skip = (page - 1) * take
     const where: Prisma.TokenWhereInput = {}
     if (id) where.id = id
     if (userId) where.userId = userId

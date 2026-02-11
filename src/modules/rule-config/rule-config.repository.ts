@@ -6,7 +6,7 @@ import * as pt from '@app/common/prisma-types'
 
 @Injectable()
 export class RuleConfigRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll(
     page: number,
@@ -84,7 +84,6 @@ export class RuleConfigRepository {
     })
   }
 
-
   /**
    * 创建新规则配置
    * @param data 规则配置数据
@@ -114,11 +113,11 @@ export class RuleConfigRepository {
    * @param id 规则配置ID
    * @returns 删除的规则配置
    */
-  async remove(id: number): Promise<pt.FULL_RULE_CONFIG_TYPE> {
-    return this.prisma.ruleConfig.update({
-      where: { id, },
+  async delete(id: number): Promise<boolean> {
+    const data = await this.prisma.ruleConfig.update({
+      where: { id },
       data: { deletedAt: new Date() },
-      select: pt.FULL_RULE_CONFIG_FIELDS,
     })
+    return data.deletedAt !== null
   }
 }

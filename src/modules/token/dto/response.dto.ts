@@ -9,10 +9,9 @@ const TokenItemSchema = z.object({
   userId: z.number().describe('用户ID'),
   type: z.string().describe('Token类型'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class TokensResDto extends createZodDto(ListResSchema(TokenItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(TokenItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(TokenItemSchema)) {}
 
 

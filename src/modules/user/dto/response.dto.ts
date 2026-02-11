@@ -10,10 +10,9 @@ const UserItemSchema = z.object({
   phone: z.string().optional().describe('电话'),
   roleId: z.number().describe('角色ID'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class UsersResDto extends createZodDto(ListResSchema(UserItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(UserItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(UserItemSchema)) {}
 
 

@@ -4,8 +4,8 @@ import { Controller, Post, Body, HttpStatus, UseInterceptors, HttpCode } from '@
 import { AuthService } from '@app/modules/auth/auth.service'
 import { PublicAuth } from '@app/common/decorators/public-auth.decorator'
 import {
-  ApiOkResponse,
-  ApiCreatedResponse,
+  ApiOk,
+  ApiCreated,
   ApiResponses,
   ApiBadRequest,
   ApiConflict,
@@ -26,7 +26,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @ApiOperation({ summary: '用户登录' })
-  @ApiOkResponse(LoginResDto)
+  @ApiOk(LoginResDto)
   @ApiResponses({ noAuth: true, locked: true, notFound: true, gone: true })
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -35,7 +35,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: '用户注册' })
-  @ApiCreatedResponse(RegResDto)
+  @ApiCreated(RegResDto)
   @ApiBadRequest()
   @ApiConflict()
   @Post('register')

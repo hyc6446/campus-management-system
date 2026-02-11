@@ -9,10 +9,9 @@ const RuleConfigItemSchema = z.object({
   rule: z.string().describe('规则'),
   type: z.string().describe('类型'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class RulesResDto extends createZodDto(ListResSchema(RuleConfigItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(RuleConfigItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(RuleConfigItemSchema)) {}
 
 

@@ -12,8 +12,7 @@ const BorrowItemSchema = z.object({
   dueDate: z.date().describe('到期日期'),
   returnDate: z.date().describe('归还日期'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class BorrowResDto extends createZodDto(ListResSchema(BorrowItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(BorrowItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(BorrowItemSchema)) {}

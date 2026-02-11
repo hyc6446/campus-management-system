@@ -23,14 +23,14 @@ export class SeatReservationRepository {
     skip: number,
     where: Prisma.SeatReservationWhereInput,
     orderBy: Prisma.SeatReservationOrderByWithRelationInput
-  ): Promise<{ data: pt.SAFE_SEAT_RESERVATION_TYPE[]; total: number; page: number; take: number }> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_SEAT_RESERVATION_TYPE>> {
     const [data, total] = await Promise.all([
       this.prisma.seatReservation.findMany({
         where,
         skip,
         take,
         orderBy,
-        select: pt.SAFE_SEAT_RESERVATION_FIELDS,
+        select: pt.DEFAULT_SEAT_RESERVATION_FIELDS,
       }),
       this.prisma.seatReservation.count({ where }),
     ])
@@ -88,10 +88,10 @@ export class SeatReservationRepository {
    * @param data 座位预约数据
    * @returns 创建的座位预约
    */
-  async create(data: CreateDto): Promise<pt.SAFE_SEAT_RESERVATION_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_SEAT_RESERVATION_TYPE> {
     return this.prisma.seatReservation.create({
       data,
-      select: pt.SAFE_SEAT_RESERVATION_FIELDS,
+      select: pt.DEFAULT_SEAT_RESERVATION_FIELDS,
     })
   }
 
@@ -101,11 +101,11 @@ export class SeatReservationRepository {
    * @param data 更新数据
    * @returns 更新后的座位预约
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_SEAT_RESERVATION_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_SEAT_RESERVATION_TYPE> {
     return this.prisma.seatReservation.update({
       where: { id },
       data,
-      select: pt.SAFE_SEAT_RESERVATION_FIELDS,
+      select: pt.DEFAULT_SEAT_RESERVATION_FIELDS,
     })
   }
 
@@ -115,12 +115,11 @@ export class SeatReservationRepository {
    * @returns 是否删除成功
    */
   async delete(id: number): Promise<boolean> {
-    const deletedSeatReservation = await this.prisma.seatReservation.update({
+    const data = await this.prisma.seatReservation.update({
       where: { id },
       data: { deletedAt: new Date() },
-      select: pt.SAFE_SEAT_RESERVATION_FIELDS,
     })
-    return deletedSeatReservation !== null
+    return data !== null
   }
 
   /**
@@ -129,10 +128,10 @@ export class SeatReservationRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredSeatReservation = await this.prisma.seatReservation.update({
+    const data = await this.prisma.seatReservation.update({
       where: { id },
       data: { deletedAt: null },
     })
-    return restoredSeatReservation !== null
+    return data !== null
   }
 }

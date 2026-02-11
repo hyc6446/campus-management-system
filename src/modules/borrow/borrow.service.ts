@@ -18,7 +18,7 @@ export class BorrowService {
    * @param query 查询参数
    * @returns 书籍借阅列表和总数
    */
-  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_BORROW_TYPE>> {
+  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_BORROW_TYPE>> {
     const {
       page = 1,
       limit: take = 10,
@@ -67,7 +67,7 @@ export class BorrowService {
    * @param data 书籍借阅数据
    * @returns 创建的书籍借阅
    */
-  async create(data: CreateDto, userId: number): Promise<pt.SAFE_BORROW_TYPE> {
+  async create(data: CreateDto, userId: number): Promise<pt.DEFAULT_BORROW_TYPE> {
     // 检查用户是否为借阅者
     const { bookId } = data
     if (userId !== data.userId)
@@ -92,7 +92,7 @@ export class BorrowService {
    * @param data 更新数据
    * @returns 更新后的书籍借阅
    */
-  async update(user: pt.SAFE_USER_TYPE, id: number, data: UpdateDto): Promise<pt.SAFE_BORROW_TYPE> {
+  async update(user: pt.SAFE_USER_TYPE, id: number, data: UpdateDto): Promise<pt.DEFAULT_BORROW_TYPE> {
     // 检查借阅是否存在
     const borrow = await this.borrowRepository.findById(id)
     if (!borrow) throw new AppException('该借阅不存在', 'Borrow_No_Found', HttpStatus.NOT_FOUND)

@@ -8,10 +8,9 @@ const PermissionItemSchema = z.object({
   subject: z.string().describe('对象'),
   roleId: z.number().describe('角色ID'),
   createdAt: z.date().describe('创建时间'),
-  updatedAt: z.date().describe('更新时间'),
 })
 
-export class PermissionsResDto extends createZodDto(ListResSchema(PermissionItemSchema)) {}
+export class ListResDto extends createZodDto(ListResSchema(PermissionItemSchema)) {}
 export class ResponseDto extends createZodDto(ItemResSchma(PermissionItemSchema)) {}
 
 

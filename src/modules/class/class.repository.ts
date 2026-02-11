@@ -23,9 +23,9 @@ export class ClassRepository {
     skip: number,
     where: Prisma.ClassWhereInput,
     orderBy: Prisma.ClassOrderByWithRelationInput
-  ): Promise<{ data: pt.SAFE_CLASS_TYPE[]; total: number; page: number; take: number }> {
+  ): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_CLASS_TYPE>> {
     const [data, total] = await Promise.all([
-      this.prisma.class.findMany({ where, skip, take, orderBy, select: pt.SAFE_CLASS_FIELDS }),
+      this.prisma.class.findMany({ where, skip, take, orderBy, select: pt.DEFAULT_CLASS_FIELDS }),
       this.prisma.class.count({ where }),
     ])
     return { data, total, page, take }
@@ -82,10 +82,10 @@ export class ClassRepository {
    * @param data 班级数据
    * @returns 创建的班级
    */
-  async create(data: CreateDto): Promise<pt.SAFE_CLASS_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_CLASS_TYPE> {
     return this.prisma.class.create({
       data,
-      select: pt.SAFE_CLASS_FIELDS,
+      select: pt.DEFAULT_CLASS_FIELDS,
     })
   }
 
@@ -95,11 +95,11 @@ export class ClassRepository {
    * @param data 更新数据
    * @returns 更新后的班级
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_CLASS_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_CLASS_TYPE> {
     return this.prisma.class.update({
       where: { id },
       data,
-      select: pt.SAFE_CLASS_FIELDS,
+      select: pt.DEFAULT_CLASS_FIELDS,
     })
   }
 
@@ -109,12 +109,11 @@ export class ClassRepository {
    * @returns 是否删除成功
    */
   async delete(id: number): Promise<boolean> {
-    const deletedClass = await this.prisma.class.update({
+    const data = await this.prisma.class.update({
       where: { id },
       data: { deletedAt: new Date() },
-      select: pt.SAFE_CLASS_FIELDS,
     })
-    return deletedClass !== null
+    return data !== null
   }
 
   /**
@@ -123,10 +122,10 @@ export class ClassRepository {
    * @returns 是否恢复成功
    */
   async restore(id: number): Promise<boolean> {
-    const restoredClass = await this.prisma.class.update({
+    const data = await this.prisma.class.update({
       where: { id },
       data: { deletedAt: null },
     })
-    return restoredClass !== null
+    return data !== null
   }
 }

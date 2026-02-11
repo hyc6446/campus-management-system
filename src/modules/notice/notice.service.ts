@@ -14,7 +14,7 @@ export class NoticeService {
    * @param query 查询参数
    * @returns 公告列表和总数
    */
-  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_NOTICE_TYPE>> {
+  async findAll(query: QueryDto): Promise<pt.QUERY_LIST_TYPE<pt.DEFAULT_NOTICE_TYPE>> {
     const {
       page = 1,
       limit: take = 10,
@@ -59,7 +59,7 @@ export class NoticeService {
    * @param data 公告数据
    * @returns 创建的公告
    */
-  async create(data: CreateDto): Promise<pt.SAFE_NOTICE_TYPE> {
+  async create(data: CreateDto): Promise<pt.DEFAULT_NOTICE_TYPE> {
     const existingNotice = await this.noticeRepository.findByNameOptional(data.title)
     if (existingNotice) throw new AppException('公告已存在', 'Notice_Exist', HttpStatus.BAD_REQUEST)
     return this.noticeRepository.create(data)
@@ -71,7 +71,7 @@ export class NoticeService {
    * @param data 更新数据
    * @returns 更新后的公告
    */
-  async update(id: number, data: UpdateDto): Promise<pt.SAFE_NOTICE_TYPE> {
+  async update(id: number, data: UpdateDto): Promise<pt.DEFAULT_NOTICE_TYPE> {
     // 检查公告是否存在
     const updatedata = await this.noticeRepository.findByIdOptionalWithFull(id)
     if (!updatedata) throw new AppException('公告不存在', 'Notice_No_Found', HttpStatus.NOT_FOUND)

@@ -16,7 +16,6 @@ export const BOOK_TABLE_FIELDS = [
   'deletedAt',
 ] as const
 
-// 预设字段对象（只包含 Book 自身字段）
 export const DEFAULT_BOOK_FIELDS = {
   id: true,
   name: true,

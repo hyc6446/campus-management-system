@@ -5,6 +5,9 @@ import type { Prisma } from '@prisma/client'
 export const STUDENT_TABLE_FIELDS = [
   'id',
   'name',
+  'password',
+  'phone',
+  'cardId',
   'classId',
   'createdAt',
   'updatedAt',
@@ -15,6 +18,8 @@ export const STUDENT_TABLE_FIELDS = [
 export const DEFAULT_STUDENT_FIELDS = {
   id: true,
   name: true,
+  phone: true,
+  cardId: true,
   classId: true,
   createdAt: true,
 } satisfies Prisma.StudentSelect
@@ -26,6 +31,7 @@ export const SAFE_STUDENT_FIELDS = {
 
 export const FULL_STUDENT_FIELDS = {
   ...SAFE_STUDENT_FIELDS,
+  password: true,
   deletedAt: true,
 } satisfies Prisma.StudentSelect
 

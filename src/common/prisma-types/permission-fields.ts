@@ -5,7 +5,6 @@ const PERMISSION_TABLE_FIELDS = [
   'id',
   'action',
   'subject',
-  'conditions',
   'roleId',
   'createdAt',
   'updatedAt',
@@ -18,11 +17,11 @@ const DEFAULT_PERMISSION_FIELDS = {
   action: true,
   subject: true,
   roleId: true,
+  createdAt: true,
 } satisfies Prisma.PermissionSelect
 
 const SAFE_PERMISSION_FIELDS = {
   ...DEFAULT_PERMISSION_FIELDS,
-  createdAt: true,
   updatedAt: true,
 } satisfies Prisma.PermissionSelect
 

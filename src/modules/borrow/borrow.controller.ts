@@ -1,23 +1,22 @@
-import { ZodSerializerInterceptor } from 'nestjs-zod'
+import { RoleType } from '@prisma/client'
 import * as pt from '@app/common/prisma-types'
+import { ZodSerializerInterceptor } from 'nestjs-zod'
 import { CurrentUser } from '@app/common/decorators/current-user.decorator'
 import { AuthGuard } from '@app/common/guards/auth.guard'
 import { RolesGuard } from '@app/common/guards/roles.guard'
-import { RoleType } from '@app/modules/role/role.entity'
 import { Action, SubjectsEnum } from '@app/core/casl/casl.types'
 import { Roles } from '@app/common/decorators/roles.decorator'
 import { Permissions } from '@app/common/decorators/permissions.decorator'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
-import { Borrow } from '@app/modules/borrow/borrow.entity'
 import { BorrowService } from '@app/modules/borrow/borrow.service'
-import { CreateDto, QueryDto, UpdateDto } from '@app/modules/borrow/dto'
+import { CreateDto, QueryDto, UpdateDto, ListResDto, ResponseDto } from '@app/modules/borrow/dto'
+import { ApiOk, ApiCreated, ApiResponses } from '@app/common/decorators/api-responses.decorator'
 import {
   Controller,
   Post,
   Body,
   Param,
   ParseIntPipe,
-  HttpStatus,
   Get,
   UseGuards,
   Query,
@@ -35,27 +34,16 @@ export class BorrowController {
   constructor(private borrowService: BorrowService) {}
 
   @ApiOperation({ summary: '查询图书借阅' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '获取图书借阅列表',
-    type: Borrow,
-    isArray: true,
-  })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的查询参数' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
+  @ApiOk(ListResDto)
   @Roles(RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.Borrow })
   @Get()
-  async findAll(
-    @Query() query: QueryDto
-  ): Promise<pt.QUERY_LIST_TYPE<pt.SAFE_BORROW_TYPE>> {
+  async findAll(@Query() query: QueryDto) {
     return await this.borrowService.findAll(query)
   }
 
   @ApiOperation({ summary: '获取指定图书借阅信息' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取图书借阅信息', type: Borrow })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书借阅不存在' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  @ApiOk(ResponseDto)
   @Roles(RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Read, subject: SubjectsEnum.Borrow })
   @Get(':id')
@@ -64,13 +52,7 @@ export class BorrowController {
   }
 
   @ApiOperation({ summary: '创建图书借阅' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: '图书借阅创建成功',
-    type: Borrow,
-  })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
+  @ApiCreated(ResponseDto)
   @Roles(RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Create, subject: SubjectsEnum.Borrow })
   @Post()
@@ -78,9 +60,8 @@ export class BorrowController {
     return await this.borrowService.create(data, user.id)
   }
   @ApiOperation({ summary: '更新图书借阅' })
-  @ApiResponse({ status: HttpStatus.OK, description: '图书借阅更新成功', type: Borrow })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书借阅不存在' })
+  @ApiOk(ResponseDto)
+  @ApiResponses({ conflict: true })
   @Roles(RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Update, subject: SubjectsEnum.Borrow })
   @Put(':id')
@@ -93,10 +74,8 @@ export class BorrowController {
   }
 
   @ApiOperation({ summary: '删除图书借阅' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书借阅不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '图书借阅删除成功' })  
+  @ApiOk(null)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Delete, subject: SubjectsEnum.Borrow })
   @Delete(':id')
@@ -105,10 +84,8 @@ export class BorrowController {
   }
 
   @ApiOperation({ summary: '恢复图书借阅' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '无效的输入数据' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无操作权限' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '该图书借阅不存在' })
-  @ApiResponse({ status: HttpStatus.OK, description: '图书借阅恢复成功' })
+  @ApiOk(null)
+  @ApiResponses({ conflict: true, notFound: true, gone: true })
   @Roles(RoleType.TEACHER, RoleType.STUDENT)
   @Permissions({ action: Action.Restore, subject: SubjectsEnum.Borrow })
   @Put(':id/restore')
